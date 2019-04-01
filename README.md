@@ -11,7 +11,3 @@ npm run build
 ```bash
 npm run watch
 ```
-
-### LOAD EXTENSION
-
-go chrome://extensions, enable `developer mode`, then click `load unpacked`, DONE.

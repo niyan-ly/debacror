@@ -1,5 +1,19 @@
-const argParser = require('minimist')
+const puppeteer = require('puppeteer-core')
+const { resolve } = require('path')
 
-const argv = argParser(process.argv.slice(2))
+const extPath = resolve(__dirname, './release')
+const chromePath = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
 
-console.log(argv)
+  ; (async () => {
+    const browser = await puppeteer.launch({
+      headless: false,
+      executablePath: chromePath,
+      args: [
+        `--disable-extensions-except=${extPath}`,
+        `--load-extension=${extPath}`
+      ]
+    })
+
+    // const page = await browser.newPage();
+    // page.goto('https://www.baidu.com')
+  })();
