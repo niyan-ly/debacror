@@ -1,0 +1,33 @@
+{
+  "name": "chrome-ext",
+  "version": "0.1.0",
+  "description": "",
+  "main": "background.js",
+  "scripts": {
+    "watch": "node build --watch",
+    "build": "node build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hapulb/chrome-ext.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hapulb/chrome-ext/issues"
+  },
+  "homepage": "https://github.com/hapulb/chrome-ext#readme",
+  "dependencies": {
+    "@medv/finder": "^1.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "babel-loader": "^8.0.5",
+    "copy-webpack-plugin-advanced": "^2.0.0",
+    "minimist": "^1.2.0",
+    "webpack": "^4.29.6"
+
+  }
+}
