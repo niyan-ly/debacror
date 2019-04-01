@@ -2,7 +2,7 @@ import finder from '@medv/finder'
 
 const p = document.createElement('p')
 p.id = 'selected'
-p.innerText = '请选择'
+p.innerText = '请点击'
 p.style.textAlign = 'center'
 
 document.body.insertBefore(p, document.body.firstElementChild)

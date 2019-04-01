@@ -92,16 +92,11 @@ const config = {
     new CopyPlugin([
       'manifest.json',
       'popup.html',
-    ]),
-    new AfterCompilationPlugin(lauchChrome, closeChrome)
+    ])
   ]
 }
 
-useConfig = { ...config, watch: arg.watch }
-server.listen(3000, () => {
-  console.log(`server@${server.address().port} is running ...`)
-})
-webpack(useConfig, (err, stat) => {
+const errLog = (err, stat) => {
 
   if (err) {
     throw err
@@ -111,4 +106,18 @@ webpack(useConfig, (err, stat) => {
 
   console.log('\ncompile DONE...\n');
 
-})
+}
+
+if (arg.watch) {
+  server.listen(3000, () => {
+    console.log(`server@${server.address().port} is running ...`)
+  })
+
+  webpack({
+    ...config,
+    watch: true,
+    plugins: [...config.plugins, new AfterCompilationPlugin(lauchChrome, closeChrome)]
+  }, errLog)
+} else {
+  webpack(config, errLog)
+}
