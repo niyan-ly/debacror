@@ -13,7 +13,6 @@ const server = http.createServer((req, res) => {
     .pipe(res)
 })
 
-let useConfig = {}
 let browser = null
 
 class AfterCompilationPlugin {
@@ -24,11 +23,10 @@ class AfterCompilationPlugin {
    */
   constructor(initial, cleanup) {
     this.name = 'AfterCompilationPlugin'
-    this.initial = initial
-    this.cleanup = cleanup
+    this.initial = initial || (() => {})
+    this.cleanup = cleanup || (() => {})
   }
   /**
-   * 
    * @param {webpack.Compiler} compiler 
    */
   apply(compiler) {
@@ -43,13 +41,20 @@ class AfterCompilationPlugin {
 }
 
 async function lauchChrome() {
+  /**
+   * ignore when instance of browser window already exist
+   */
+  if (browser && (await browser.pages()).length) {
+    return
+  }
   browser = await puppeteer.launch({
     headless: false,
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`
     ],
-    defaultViewport: null
+    defaultViewport: null,
+    devtools: false
   })
 
   await (await browser.pages())[0].goto('http://127.0.0.1:3000')
@@ -82,8 +87,10 @@ const config = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
+        exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-env']
+          presets: ['@babel/preset-env'],
+          plugins: ['@babel/plugin-transform-runtime']
         }
       }
     ]
@@ -92,6 +99,7 @@ const config = {
     new CopyPlugin([
       'manifest.json',
       'popup.html',
+      'bulma.min.css'
     ])
   ]
 }
@@ -116,7 +124,7 @@ if (arg.watch) {
   webpack({
     ...config,
     watch: true,
-    plugins: [...config.plugins, new AfterCompilationPlugin(lauchChrome, closeChrome)]
+    plugins: [...config.plugins, new AfterCompilationPlugin(lauchChrome)]
   }, errLog)
 } else {
   webpack(config, errLog)

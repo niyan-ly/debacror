@@ -19,11 +19,13 @@
   },
   "homepage": "https://github.com/hapulb/chrome-ext#readme",
   "dependencies": {
+    "@babel/runtime": "^7.4.3",
     "@medv/finder": "^1.1.1",
     "puppeteer": "^1.14.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
+    "@babel/plugin-transform-runtime": "^7.4.3",
     "@babel/preset-env": "^7.4.2",
     "babel-loader": "^8.0.5",
     "copy-webpack-plugin-advanced": "^2.0.0",

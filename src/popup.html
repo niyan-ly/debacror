@@ -4,17 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="bulma.min.css">
   <title>Chrome-ext</title>
   <style>
-    .color {
+    .panel {
+      width: 360px;
+      height: 208px;
+      overflow: auto;
+    }
+
+    .top {
+      text-align: center;
+    }
+
+    .record {
       width: 40px;
       height: 40px;
       border-radius: 50%;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="color"></div>
+  <div class="panel">
+    <div class="top">
+      <!-- for security reasons, inline event listener is not allowed -->
+      <button class="record"></button>
+      <p>start record</p>
+    </div>
+    <ul class="bottom"></ul>
+  </div>
   <script src="./popup.js"></script>
 </body>
 </html>
