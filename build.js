@@ -70,6 +70,7 @@ async function closeChrome() {
 const config = {
   mode: 'production',
   context: resolve(__dirname, 'src'),
+  // devtool: 'cheap-module-source-map',
   resolve: {
     extensions: ['.js']
   },

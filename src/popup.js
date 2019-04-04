@@ -12,6 +12,7 @@ function startRecord() {
 
 async function update() {
   const { targets = [] } = await storage.get(['targets'])
+  list.innerHTML = ''
   targets.map(text => {
     const li = document.createElement('li')
     li.innerText = text
