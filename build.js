@@ -91,7 +91,10 @@ const config = {
         exclude: [/node_modules/],
         options: {
           presets: ['@babel/preset-env'],
-          plugins: ['@babel/plugin-transform-runtime']
+          plugins: [
+            '@babel/plugin-transform-runtime',
+            'transform-class-properties'
+          ]
         }
       }
     ]
