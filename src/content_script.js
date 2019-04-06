@@ -1,4 +1,5 @@
 import finder from '@medv/finder'
+import { communicator, storage, dom } from './util'
 
 let EVENT_TARGET = null
 
@@ -9,13 +10,15 @@ function onInputEnd({ target }) {
   // ignore empty input action
   if (target.value) {
     const message = {
-      type: 'outer',
-      action: 'input',
-      target: finder(target),
-      value: target.value
+      action: 'SAVE',
+      data: {
+        action: 'input',
+        target: finder(target),
+        value: target.value
+      },
     }
 
-    chrome.runtime.sendMessage(message)
+    communicator.toBackground(message)
   }
 
   // blue mean this action is end-up
@@ -48,12 +51,14 @@ function inputListener({ target }) {
  */
 function clickListener(e) {
   const message = {
-    type: 'outer',
-    action: 'click',
-    target: finder(e.target)
+    action: 'SAVE',
+    data: {
+      action: 'click',
+      target: finder(e.target)
+    },
   }
 
-  chrome.runtime.sendMessage(message)
+  communicator.toBackground(message)
 }
 
 /**
@@ -72,12 +77,50 @@ function detach() {
   document.body.removeEventListener('click', clickListener)
 }
 
-chrome.runtime.onMessage.addListener((request, sender) => {
+async function delay(millisecond) {
+  await new Promise(res => {
+    setTimeout(res, millisecond);
+  })
+}
+
+async function restore({ delayValue = 400 }) {
+  const { targets = [] } = await storage.get(['targets']);
+
+  for (const record of targets) {
+    const element = dom.get(record.target)
+    await delay(Number(delayValue))
+
+    if (record.action === 'input') {
+      element.value = record.value
+      record.value && record.value.split("").map(letter => {
+        const event = new Event("input", {
+          bubbles: true,
+          cancelable: true,
+          data: letter
+        })
+
+        element.dispatchEvent(event)
+      })
+    }
+
+    if (record.action === 'click') {
+      const event = new Event('click', {
+        bubbles: true,
+        cancelable: true
+      })
+
+      element.dispatchEvent(event)
+    }
+  }
+}
+
+communicator.onMessageForCS = request => {
   const executor = {
-    START: inject,
-    END: detach
+    START_RECORD: inject,
+    END_RECORD: detach,
+    RESTORE: restore
   };
 
   const doThis = executor[request.action];
-  doThis instanceof Function ? doThis() : null;
-})
+  doThis instanceof Function ? doThis(request) : null;
+}

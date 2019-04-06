@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>web automation test</title>
+  <link rel="stylesheet" href="bulma.min.css">
   <style>
     html,
     body,
@@ -57,10 +58,31 @@
     .inner:hover {
       background-color: rgba(0, 255, 0, .2);
     }
+
+    .msg-container {
+      z-index: 1050;
+      position: absolute;
+      width: 40%;
+      left: 30%;
+      top: 0;
+    }
+
+    .message {
+      margin-top: 0px;
+      box-shadow: 0 2px 3px 0 rgba(0, 0, 0, .1), inset 0 0 0 1px rgba(0, 0, 0, .1);
+      transition: all .3s ease-out;
+      opacity: 0;
+    }
+
+    .show {
+      opacity: 1;
+      margin-top: 12px;
+    }
   </style>
 </head>
 
 <body>
+  <div class="msg-container"></div>
   <div class="container">
     <p>container</p>
   </div>
@@ -73,5 +95,67 @@
     <input type="text">
   </div>
 </body>
+<script>
+  const msgContainer = document.querySelector('.msg-container')
+
+  class ElementRef {
+    constructor(node) {
+      this.node = node
+    }
+
+    show(title, body) {
+      const msgBody = this.node.querySelector('.message-body')
+      const msgHeader = this.node.querySelector('.message-header')
+      this.node.classList.add('show')
+      msgHeader.innerHTML = title || ' '
+      msgBody.innerHTML = body || ' '
+    }
+
+    hide() {
+      const msgBody = this.node.querySelector('.message-body')
+      const msgHeader = this.node.querySelector('.message-header>h1')
+      this.node.classList.remove('show')
+    }
+
+    clear() {
+      msgContainer.removeChild(this.node)
+    }
+  }
+
+  function createMsg() {
+    const msg = document.createElement('article')
+    const msgTitle = document.createElement('div')
+    const msgBody = document.createElement('div')
+    msg.className = 'message is-primary'
+    msgTitle.className = 'message-header'
+    msgBody.className = 'message-body'
+    msg.appendChild(msgTitle)
+    msg.appendChild(msgBody)
+
+    msgContainer.insertBefore(msg, msgContainer.firstElementChild)
+    return new ElementRef(msg)
+  }
+
+  async function delay(second) {
+    await new Promise(res => {
+      setTimeout(res, second * 1000);
+    })
+  }
+
+  async function notify(title, content) {
+    const msg = createMsg()
+    await delay(.1)
+    await delay()
+    msg.show(title, content)
+    await delay(2);
+    msg.hide()
+    await delay(.4);
+    msg.clear()
+  }
+
+  document.body.addEventListener('click', e => {
+    notify('You clicked', e.target.tagName.toLowerCase())
+  })
+</script>
 
 </html>

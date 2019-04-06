@@ -23,14 +23,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
     "@babel/plugin-transform-runtime": "^7.4.3",
     "@babel/preset-env": "^7.4.2",
     "@babel/runtime": "^7.4.3",
     "babel-loader": "^8.0.5",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "copy-webpack-plugin-advanced": "^2.0.0",
     "minimist": "^1.2.0",
     "puppeteer": "^1.14.0",
+    "serve-static": "^1.13.2",
     "webpack": "^4.29.6"
   }
 }

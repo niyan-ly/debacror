@@ -1,11 +1,18 @@
-import { storage } from './util'
+import { storage, dom, communicator } from './util'
+
+const CONDITION = { active: true, currentWindow: true };
 
 function startRecord() {
-  chrome.tabs.query(condition, ([tab]) => {
-    chrome.tabs.sendMessage(tab.id, { action: 'START' });
+  chrome.tabs.query(CONDITION, ([tab]) => {
+    communicator.toContentScript(tab.id, {
+      action: 'START_RECORD'
+    })
   });
 }
 
+/**
+ * update popup page
+ */
 async function update() {
   const { targets = [] } = await storage.get(['targets'])
   list.innerHTML = ''
@@ -22,32 +29,43 @@ function clearRecordHistory() {
 }
 
 function stopRecord() {
-  chrome.tabs.query(condition, ([tab]) => {
-    chrome.tabs.sendMessage(tab.id, { action: 'END' })
+  chrome.tabs.query(CONDITION, ([tab]) => {
+    communicator.toContentScript(tab.id, { action: 'END_RECORD' })
+  })
+}
+
+/**
+ * do roboticized workflow
+ */
+async function restore() {
+  chrome.tabs.query(CONDITION, ([tab]) => {
+    communicator.toContentScript(tab.id, {
+      action: 'RESTORE',
+      delayValue: document.querySelector('input[name="delay"]').value
+    })
   })
 }
 
 const messageHandler = {
-  update
+  UPDATE_VIEW: update
 }
 
-chrome.runtime.onMessage.addListener(request => {
-  if (request.type === 'inner') {
-    const handler = messageHandler[request.action]
-    handler instanceof Function ? handler() : null;
-  }
-})
+communicator.onMessageForPopUp = request => {
+  const handler = messageHandler[request.action]
+  handler instanceof Function ? handler() : null;
+}
 
-const recordBtn = document.querySelector('.record')
-const clearBtn = document.querySelector('.clear')
-const list = document.querySelector(".bottom")
-const stopBtn = document.querySelector('.stop')
-
-const condition = { active: true, currentWindow: true };
-
+const [
+  recordBtn,
+  clearBtn,
+  list,
+  stopBtn,
+  restoreBtn
+] = dom.get(['.record', '.clear', '.bottom', '.stop', '.restore'])
 
 recordBtn.addEventListener('click', startRecord)
 clearBtn.addEventListener('click', clearRecordHistory)
 stopBtn.addEventListener('click', stopRecord)
+restoreBtn.addEventListener('click', restore)
 
 update()

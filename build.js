@@ -3,14 +3,18 @@ const { resolve } = require('path')
 const CopyPlugin = require('copy-webpack-plugin-advanced')
 const argParser = require('minimist')
 const puppeteer = require('puppeteer')
+const serveStatic = require('serve-static')
 const http = require('http')
-const { createReadStream } = require('fs')
 
 const arg = argParser(process.argv.slice(2))
 const extensionPath = resolve(__dirname, './release')
 const server = http.createServer((req, res) => {
-  createReadStream('./extension-test.html')
-    .pipe(res)
+  serveStatic('src', {
+    index: ['../extension-test.html']
+  })(req, res, () => {
+    res.statusCode = 404
+    res.end("NOT FOUND")
+  })
 })
 
 let browser = null
@@ -23,8 +27,8 @@ class AfterCompilationPlugin {
    */
   constructor(initial, cleanup) {
     this.name = 'AfterCompilationPlugin'
-    this.initial = initial || (() => {})
-    this.cleanup = cleanup || (() => {})
+    this.initial = initial || (() => { })
+    this.cleanup = cleanup || (() => { })
   }
   /**
    * @param {webpack.Compiler} compiler 

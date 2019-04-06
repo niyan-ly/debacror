@@ -1,3 +1,86 @@
+/**
+ * @enum {String}
+ */
+const EMsgType = {
+  TO_CS: 'TO_CS',
+  TO_BG: 'TO_BG',
+  TO_POPUP: 'TO_POPUP'
+}
+
+class Communicator {
+  onMessageForCS() {}
+  onMessageForBG() {}
+  onMessageForPopUp() {}
+
+  constructor() {
+    chrome.runtime.onMessage.addListener((request, ...rest) => {
+      const executor = {
+        TO_CS: this.onMessageForCS,
+        TO_BG: this.onMessageForBG,
+        TO_POPUP: this.onMessageForPopUp
+      }
+
+      const handler = executor[request.type]
+      handler ? handler(request, ...rest) : this.warn(request.type);
+    })
+  }
+
+  /**
+   * @param {string} type 
+   */
+  warn(type) {
+    console.warn(`unregistered message type of ${type}`)
+  }
+
+  /**
+   * @param {EMsgType} to 
+   * @param {Object} message 
+   */
+  send(to, message) {
+    chrome.runtime.sendMessage({
+      ...message,
+      type: to
+    })
+  }
+
+  /**
+   * @description actually, all messages that have been sent
+   * is broadcast, this method is just a literal restraint.
+   */
+  broadcast(message) {
+    this.send(null, message)
+  }
+
+  toContentScript(tabId, message) {
+    chrome.tabs.sendMessage(tabId, {
+      ...message,
+      type: EMsgType.TO_CS
+    })
+  }
+
+  toBackground(message) {
+    this.send(EMsgType.TO_BG, message)
+  }
+
+  toPopUp(message) {
+    this.send(EMsgType.TO_POPUP, message)
+  }
+}
+
+class DOMManipulator {
+  /**
+   * @description alias of document.queryselector
+   * @param {String|String[]} cssSelector
+   * @returns {Element}
+   */
+  get(cssSelector) {
+    const isArray = Array.isArray(cssSelector)
+    const useSelectors = isArray ? cssSelector : [cssSelector]
+    const result = useSelectors.map(s => document.querySelector(s))
+    return isArray ? result : result[0]
+  }
+}
+
 class Storage {
   queue = []
   locked = false
@@ -52,16 +135,13 @@ class Storage {
       // do clean up
       this.locked = false
       // notify popup to update UI
-      chrome.runtime.sendMessage({
-        type: 'inner',
-        action: 'update'
+      communicator.toPopUp({
+        action: 'UPDATE_VIEW'
       })
     }
   }
 }
 
-const storage = new Storage()
-
-export {
-  storage
-}
+export const storage = new Storage()
+export const dom = new DOMManipulator()
+export const communicator = new Communicator()

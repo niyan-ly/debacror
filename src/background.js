@@ -1,7 +1,7 @@
-import { storage } from './util'
+import { storage, communicator } from './util'
 
-chrome.runtime.onMessage.addListener(({ type, ...others }) => {
-  if (type === 'outer') {
-    storage.add('targets', others)
+communicator.onMessageForBG = ({ action, data }) => {
+  if (action === 'SAVE') {
+    storage.add('targets', data)
   }
-});
+}
