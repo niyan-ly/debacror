@@ -1,0 +1,44 @@
+body {
+  width: 340px;
+  min-height: 320px;
+}
+
+.app-top {
+  padding: 8px 16px 4px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-top > img {
+  margin-right:8px;
+}
+
+div > .record-button.is-large {
+  border-radius: 50%;
+}
+
+.app-tab {
+  text-align: center;
+}
+
+.app-tab > nav ul li a {
+  background-color: white;
+}
+
+.record-button {
+  margin: 8px 0;
+}
+
+.bg-mask {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  height: 78px;
+  background-color: #7957d51c;
+  z-index: -1;
+}
+
+.restore-button {
+  margin-top: 8px;
+}

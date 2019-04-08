@@ -51,11 +51,11 @@ class Communicator {
     this.send(null, message)
   }
 
-  toContentScript(tabId, message) {
+  toContentScript(tabId, message, callback) {
     chrome.tabs.sendMessage(tabId, {
       ...message,
       type: EMsgType.TO_CS
-    })
+    }, callback)
   }
 
   toBackground(message) {

@@ -2,6 +2,7 @@ import finder from '@medv/finder'
 import { communicator, storage, dom } from './util'
 
 let EVENT_TARGET = null
+let HAS_INJECTED = false
 
 /**
  * @param {Event} param0 
@@ -65,6 +66,7 @@ function clickListener(e) {
  * inject listener to web page
  */
 function inject() {
+  HAS_INJECTED = true
   document.body.addEventListener('click', clickListener)
   document.body.addEventListener('input', inputListener)
 }
@@ -75,6 +77,7 @@ function inject() {
  */
 function detach() {
   document.body.removeEventListener('click', clickListener)
+  HAS_INJECTED = false
 }
 
 async function delay(millisecond) {
@@ -114,13 +117,18 @@ async function restore({ delayValue = 400 }) {
   }
 }
 
-communicator.onMessageForCS = request => {
+communicator.onMessageForCS = (request, ...others) => {
   const executor = {
     START_RECORD: inject,
     END_RECORD: detach,
-    RESTORE: restore
+    RESTORE: restore,
+    IS_RECORDING(_1, _2, sendResponse) {
+      sendResponse({
+        result: HAS_INJECTED
+      })
+    }
   };
 
   const doThis = executor[request.action];
-  doThis instanceof Function ? doThis(request) : null;
+  doThis instanceof Function ? doThis(request, ...others) : null;
 }
