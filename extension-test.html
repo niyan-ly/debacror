@@ -78,10 +78,21 @@
       opacity: 1;
       margin-top: 12px;
     }
+
+    .board {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
+  <div class="board">
+    <p class="board-title"></p>
+    <section class="board-value"></section>
+  </div>
   <div class="msg-container"></div>
   <div class="container">
     <p>container</p>
@@ -153,8 +164,22 @@
     msg.clear()
   }
 
+  function announce(type, content) {
+    const title = document.querySelector('.board-title')
+    const bullet = document.querySelector('.board-value')
+
+    title.innerHTML = `You ${type}`
+    bullet.innerHTML = content
+  }
+
   document.body.addEventListener('click', e => {
-    notify('You clicked', e.target.tagName.toLowerCase())
+    // notify('You clicked', e.target.tagName.toLowerCase())
+    announce('click', e.target.tagName.toLowerCase())
+  })
+
+  document.body.addEventListener('input', e => {
+    // notify('You typed', e.target.value)
+    announce('input', e.target.value)
   })
 </script>
 

@@ -1,6 +1,7 @@
 import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
 import { storage, communicator } from '../../util'
+import AppFooter from './footer'
 
 @Component
 export default class App {
@@ -121,6 +122,7 @@ export default class App {
           </b-tab-item>
           <b-tab-item label="ACTIONS" icon-pack="fas" icon="history"></b-tab-item>
         </b-tabs>
+        <AppFooter />
       </div>
     )
   }

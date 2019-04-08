@@ -12,7 +12,7 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js'
     },
-    extensions: ['.js', '.vue']
+    extensions: ['.js', '.vue', '.jsx']
   },
   entry: {
     'content_script': './content_script.js',
@@ -49,7 +49,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
