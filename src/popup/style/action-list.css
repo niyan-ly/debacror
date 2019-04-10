@@ -1,0 +1,13 @@
+.action-list {
+  max-height: 220px;
+  overflow: auto;
+}
+
+.action-list::-webkit-scrollbar {
+  width: 2px;
+  background-color: #aaa;
+}
+
+.action-list::-webkit-scrollbar-thumb {
+  background-color: #714dd2;
+}

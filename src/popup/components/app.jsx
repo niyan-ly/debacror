@@ -2,12 +2,15 @@ import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
 import { storage, communicator } from '../../util';
 import AppFooter from './footer';
+import ActionList from './action-list';
+import CentralButton from './central-button';
 
 @Component
 export default class App {
   delayValue = 400;
   isRecording = false;
   records = [];
+  needReload = false;
   /**
    * chrome tab filter
    */
@@ -15,6 +18,13 @@ export default class App {
     active: true,
     currentWindow: true,
   };
+
+  get recordStatu() {
+    if (this.needReload) return 'reload';
+    if (this.isRecording) {
+      return 'pause';
+    } else return 'record';
+  }
 
   async mounted() {
     const messageHandler = {
@@ -32,9 +42,15 @@ export default class App {
         {
           action: 'IS_RECORDING',
         },
-        ({ result = false }) => {
-          this.isRecording = result;
-        }
+        /**
+         * called without arguments and an error will be thrown
+         * when message failed
+         */
+        response => {
+          if (response) {
+            this.isRecording = response.result;
+          } else this.needReload = true;
+        },
       );
     });
 
@@ -88,6 +104,11 @@ export default class App {
     this.delayValue = Number(value);
   }
 
+  reloadCurrentPage() {
+    chrome.tabs.reload();
+    window.close();
+  }
+
   render(h) {
     return (
       <div>
@@ -103,46 +124,21 @@ export default class App {
           type="is-toggle"
         >
           <b-tab-item label="RECORD" icon-pack="fas" icon="video">
-            <div>
-              {this.isRecording ? (
-                <button
-                  class="record-button button is-primary is-large"
-                  onClick={this.stopRecord}
-                >
-                  <b-icon pack="fas" icon="pause-circle" />
-                </button>
-              ) : (
-                <button
-                  class="record-button button is-primary is-large"
-                  onClick={this.startRecord}
-                >
-                  <b-icon pack="fas" icon="play-circle" />
-                </button>
-              )}
-              {/* <button class="button is-small stop-record" onClick={this.stopRecord}>stop</button> */}
-              <b-input
-                min="0"
-                size="is-small"
-                type="number"
-                onInput={this.updateDelayValue}
-                value={this.delayValue}
-              />
-              <button
-                class="restore-button button is-primary is-small"
-                onClick={this.restore}
-              >
-                restore
-              </button>
-              <br />
-            </div>
-            <ul>
-              {this.records.map(({ action, value, target }) => (
-                <li>
-                  {action} -> {target} ->{' '}
-                  <span style="color:red;">{value}</span>
-                </li>
-              ))}
-            </ul>
+            <CentralButton
+              type={this.recordStatu}
+              onPause={this.stopRecord}
+              onRecord={this.startRecord}
+              onReload={this.reloadCurrentPage}
+            />
+            <p class="title is-5">Actions</p>
+            <button class="button is-small" onClick={this.restore}>
+              restore
+            </button>
+            <button class="button is-small" onClick={this.clearRecordHistory}>
+              clean
+            </button>
+            <hr style="margin:8px 0;" />
+            <ActionList dataSource={this.records} />
           </b-tab-item>
           <b-tab-item label="ACTIONS" icon-pack="fas" icon="history" />
         </b-tabs>

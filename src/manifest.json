@@ -12,8 +12,13 @@
     "js": ["content_script.js"]
   }],
   "browser_action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "32": "img/bot_32.png",
+      "64": "img/bot_64.png"
+    }
   },
+  "devtools_page": "devtool.html",
   "background": {
     "scripts": [
       "background.js"

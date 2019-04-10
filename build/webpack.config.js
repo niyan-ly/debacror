@@ -17,11 +17,24 @@ module.exports = {
   entry: {
     'content_script': './content_script.js',
     background: './background.js',
-    popup: './popup'
+    popup: './popup',
+    devtool: './devtool'
   },
   output: {
     filename: '[name].js',
+    // chunkFilename: 'chunk.js',
     path: resolve(__dirname, '../release')
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        common: {
+          test: /[\\/]node_modules[\\/](vue|buefy)[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        }
+      }
+    }
   },
   module: {
     rules: [
@@ -99,13 +112,23 @@ module.exports = {
       filename: '[name].css'
     }),
     new CopyPlugin([
-      'manifest.json'
+      'manifest.json',
+      {
+        from: 'icons/',
+        to: 'img/',
+      }
     ]),
     new HtmlWebpackPlugin({
       template: '../src/popup.html',
       inject: 'body',
       filename: 'popup.html',
-      chunks: ['popup']
+      chunks: ['vendors', 'popup']
+    }),
+    new HtmlWebpackPlugin({
+      template: '../src/devtool.html',
+      inject: 'body',
+      filename: 'devtool.html',
+      chunks: ['vendors', 'devtool']
     })
   ]
 }

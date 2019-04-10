@@ -1,4 +1,6 @@
 @import url("footer.css");
+@import url("action-tag.css");
+@import url("action-list.css");
 
 body {
   width: 340px;
@@ -16,7 +18,7 @@ body {
   margin-right:8px;
 }
 
-div > .record-button.is-large {
+div .is-bottom .record-button.is-large {
   border-radius: 50%;
 }
 
@@ -43,4 +45,9 @@ div > .record-button.is-large {
 
 .restore-button {
   margin-top: 8px;
+}
+
+.app-tab .title {
+  margin-top: 16px;
+  margin-bottom: 8px;
 }

@@ -1,0 +1,9 @@
+.action-tag {
+  text-align: left;
+  width: 90%;
+  margin: 8px auto;
+}
+
+.action-tag > .title {
+  margin: 0 8px;
+}
