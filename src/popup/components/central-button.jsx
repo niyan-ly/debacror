@@ -16,7 +16,7 @@ export default class CentralButton {
     return typeMapper[this.type];
   }
 
-  render(h) {
+  render() {
     return (
       <b-tooltip
         label="need reload"

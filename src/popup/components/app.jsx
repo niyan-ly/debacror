@@ -109,7 +109,7 @@ export default class App {
     window.close();
   }
 
-  render(h) {
+  render() {
     return (
       <div>
         <div class="bg-mask" />

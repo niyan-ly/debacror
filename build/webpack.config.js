@@ -66,8 +66,13 @@ module.exports = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-env'],
+          /**
+           * use @vue/babel-preset-jsx to enable auto-inject h feature
+           */
+          presets: ['@babel/preset-env', '@vue/babel-preset-jsx'],
           plugins: [
+            /** this plugin should always on top of plugins */
+            '@vue/babel-plugin-transform-vue-jsx',
             '@babel/plugin-transform-runtime',
             [
               '@babel/plugin-proposal-decorators',
@@ -75,7 +80,6 @@ module.exports = {
                 legacy: true
               }
             ],
-            '@vue/babel-plugin-transform-vue-jsx',
             'transform-class-properties'
           ]
         }

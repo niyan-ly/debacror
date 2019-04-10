@@ -10,7 +10,7 @@ import ActionTag from './action-tag';
   }
 })
 export default class ActionList {
-  render(h) {
+  render() {
     return (
       <section class="action-list">
         {
@@ -19,6 +19,6 @@ export default class ActionList {
           ))
         }
       </section>
-    )
+    );
   }
 }

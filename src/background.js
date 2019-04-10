@@ -1,6 +1,6 @@
 import { storage, communicator } from './util';
 
-const allowedProtocol = ['http:', 'https:']
+const allowedProtocol = ['http:', 'https:'];
 
 communicator.onMessageForBG = ({ action, data }) => {
   if (action === 'SAVE') {

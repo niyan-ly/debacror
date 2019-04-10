@@ -11,7 +11,7 @@ Vue.use(Buefy);
 Vue.component(
   'g-space',
   Vue.extend({
-    render(h) {
+    render() {
       return <div style="display:inline-block;width: 8px;height:2px" />;
     },
   }),
@@ -22,7 +22,7 @@ new Vue({
   /**
    * since there is CSP restriction in chrome, we'd better use render function
    */
-  render(h) {
+  render() {
     return <App />;
   },
 });

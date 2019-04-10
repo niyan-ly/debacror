@@ -24,7 +24,7 @@ export default class ActionTag {
     return str.length > maxLength ? substr : str;
   }
 
-  render(h) {
+  render() {
     return (
       <section class="action-tag">
         <b-tag type={this.actionType}>{this.action}</b-tag>
