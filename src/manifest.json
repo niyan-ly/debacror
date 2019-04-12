@@ -12,10 +12,10 @@
     "js": ["content_script.js"]
   }],
   "browser_action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup_disabled.html",
     "default_icon": {
-      "32": "img/bot_32.png",
-      "64": "img/bot_64.png"
+      "32": "img/bot_disabled_32.png",
+      "64": "img/bot_disabled_64.png"
     }
   },
   "devtools_page": "devtool.html",

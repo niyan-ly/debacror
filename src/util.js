@@ -123,7 +123,7 @@ class Storage {
   }
 
   /**
-   * @param {String[]} keys 
+   * @param {String[]} keys
    */
   async getKeys(keys) {
     const store = await this.get();
@@ -132,23 +132,23 @@ class Storage {
     keys.map(key => {
       r[key] = store[key];
     });
-    
+
     return r;
   }
 
   /**
    * @param {Object} dictionary
    */
-  set(dictionary) {
+  async set(dictionary) {
     /** cache will always point to the newest snapshot */
     this.cahce = dictionary;
     /**
      * each save action will keep their own snapshot
      */
-    this.save(dictionary);
+    await this.save(dictionary);
   }
 
-  /** 
+  /**
    * @description internal called only
    * @private
    */
@@ -157,26 +157,30 @@ class Storage {
 
     const store = await this.get();
 
-    chrome.storage.sync.set(
-      {
-        [this.namespace]: { ...store, ...snapshot },
-      },
-      () => {
-        /**
-         * when cache has been updated after last save action,
-         * then, an update to chrome storage is needed
-         */
-        if (this.cahce !== snapshot) {
-          this.lock = false;
-          this.save(this.cahce);
-        } else {
-          /** notify popup page to update view */
-          communicator.toPopUp({
-            action: 'UPDATE_VIEW',
-          });
-        }
-      },
-    );
+    await new Promise(async res => {
+      chrome.storage.sync.set(
+        {
+          [this.namespace]: { ...store, ...snapshot },
+        },
+        async () => {
+          /**
+           * when cache has been updated after last save action,
+           * then, an update to chrome storage is needed
+           */
+          if (this.cahce !== snapshot) {
+            this.lock = false;
+            await this.save(this.cahce);
+          } else {
+            /** notify popup page to update view */
+            communicator.toPopUp({
+              action: 'UPDATE_VIEW',
+            });
+          }
+
+          res();
+        },
+      );
+    });
   }
 }
 

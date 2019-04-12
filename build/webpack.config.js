@@ -117,6 +117,7 @@ module.exports = {
     }),
     new CopyPlugin([
       'manifest.json',
+      'popup_disabled.html',
       {
         from: 'icons/',
         to: 'img/',

@@ -1,18 +1,21 @@
 import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
-import { Record, communicator } from '../../util';
-import AppFooter from './footer';
+import { Storage, communicator } from '../../util';
+// import AppFooter from './footer';
 import ActionList from './action-list';
 import CentralButton from './central-button';
 import Snapshot from './snapshot';
+import TabInfo from './tab-info';
 
 @Component
 export default class App {
   isRecording = false;
   records = [];
-  recordStore = new Record({ name: 'record' });
+  store = null;
   needReload = false;
   selectedTabIndex = 0;
+  /** current tab */
+  tab = {};
   /**
    * chrome tab filter
    */
@@ -39,6 +42,13 @@ export default class App {
     };
 
     chrome.tabs.query(this.CONDITION, ([tab]) => {
+      this.tab = tab;
+      this.store = new Storage({
+        namespace: new URL(tab.url).hostname
+      });
+
+      this.updateView();
+
       communicator.toContentScript(
         tab.id,
         {
@@ -55,17 +65,15 @@ export default class App {
         },
       );
     });
-
-    this.updateView();
   }
 
   /**
    * fetch stored record
    */
   async fetchRecords() {
-    const targets = await this.recordStore.getActions();
+    const record = await this.store.get(this.tab.url);
 
-    return targets || [];
+    return record && record.actions || [];
   }
 
   async updateView() {
@@ -81,8 +89,10 @@ export default class App {
     });
   }
 
-  clearRecordHistory() {
-    // storage.set({ targets: [] });
+  async clearRecordHistory() {
+    await this.store.set({
+      [this.tab.url]: {}
+    });
     this.updateView();
   }
 
@@ -120,7 +130,7 @@ export default class App {
           position="is-centered"
           size="is-small"
           type="is-toggle"
-          onChange={index => this.selectedTabIndex = index}
+          onChange={index => (this.selectedTabIndex = index)}
         >
           <b-tab-item label="RECORD" icon-pack="fas" icon="video">
             <CentralButton
@@ -130,6 +140,11 @@ export default class App {
               onStart={this.startRecord}
               onPause={this.stopRecord}
               onReload={this.reloadCurrentPage}
+              onClear={this.clearRecordHistory}
+            />
+            <TabInfo
+              url={this.tab.url}
+              favIconUrl={this.tab.favIconUrl}
             />
             <p class="title is-5">Actions</p>
             <hr style="margin:8px 0;" />
@@ -143,7 +158,7 @@ export default class App {
             <Snapshot selected-tab-index={this.selectedTabIndex} />
           </b-tab-item>
         </b-tabs>
-        <AppFooter />
+        {/* <AppFooter /> */}
       </div>
     );
   }

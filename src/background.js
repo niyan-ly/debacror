@@ -1,47 +1,75 @@
 import { Record, Storage, communicator } from './util';
 
-const allowedProtocol = ['http:', 'https:'];
-const record = new Record({
-  name: 'record',
-});
 const snapshotList = new Storage({
-  namespace: 'SNAPSHOT_NAME_LIST'
+  namespace: 'SNAPSHOT_NAME_LIST',
 });
 
-communicator.onMessageForBG = async ({ action, data }) => {
-  // console.log(await record.storage.get());
-  if (action === 'SAVE') {
-    record.addActions(data);
-  }
+communicator.onMessageForBG = async ({ action, data }, sender) => {
+  const { tab } = sender;
 
-  if (action === 'CREATE_SNAPSHOT') {
-    /** 
-     * [warn] this may cause issues when multiple snapshot
-     * is created at the same time.
+  const actionMap = {
+    /**
+     * will be triggered by content script
      */
-    const originList = (await snapshotList.get('all')) || [];
-    const frame = await record.storage.get();
-    const snapshotName = `snapshot-${originList.length + 1}`;
-    const snapshotStore = new Record({ name: snapshotName });
-    snapshotList.set({
-      all: [...originList, snapshotName]
-    });
-    snapshotStore.storage.set(frame);
-  }
-};
+    async SAVE() {
+      const { url: tabUrl } = tab;
+      const { hostname: tabHost } = new URL(tabUrl);
 
-chrome.tabs.onActivated.addListener(({ windowId, tabId }) => {
-  chrome.tabs.getSelected(windowId, tab => {
-    const url = new URL(tab.url);
-    if (!allowedProtocol.includes(url.protocol)) {
+      const store = new Storage({ namespace: tabHost });
+      let originData = await store.get(tabUrl);
+
+      if (!Object.keys(originData).length) {
+        originData = {
+          actions: [],
+          url: tabUrl,
+          host: tabHost,
+        };
+      }
+
+      originData.actions.push(data);
+
+      store.set({
+        [tabUrl]: originData,
+      });
+    },
+    /**
+     * will be triggered by popup
+     */
+    async CREATE_SNAPSHOT({ host, url }) {
+      /**
+       * [warn] this may cause issues when multiple snapshot
+       * is created at the same time.
+       */
+      const store = new Storage({ namespace: host });
+      const originList = (await snapshotList.get('all')) || [];
+      const frame = await store.get(url);
+      const snapshotName = `snapshot-${originList.length + 1}`;
+      const snapshotStore = new Record({ name: snapshotName });
+      snapshotList.set({
+        all: [...originList, snapshotName],
+      });
+      snapshotStore.storage.set(frame);
+    },
+    /**
+     * when extension is available
+     * 
+     * triggered by content script
+      */
+    AVAILABLE() {
       chrome.browserAction.setIcon({
-        tabId,
+        tabId: tab.id,
         path: {
-          16: 'img/bot_disabled_16.png',
-          32: 'img/bot_disabled_32.png',
-          64: 'img/bot_disabled_64.png',
+          32: 'img/bot_32.png',
+          64: 'img/bot_64.png',
         },
       });
-    }
-  });
-});
+      chrome.browserAction.setPopup({
+        tabId: tab.id,
+        popup: 'popup.html',
+      });
+    },
+  };
+
+  const handler = actionMap[action];
+  handler ? handler(data) : null;
+};

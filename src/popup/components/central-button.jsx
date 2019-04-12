@@ -1,5 +1,5 @@
 import Component from 'vue-class-component';
-import { communicator, Storage } from '../../util';
+import { communicator } from '../../util';
 
 @Component({
   props: {
@@ -33,8 +33,18 @@ export default class CentralButton {
   }
 
   createSnapshot() {
-    communicator.toBackground({
-      action: 'CREATE_SNAPSHOT'
+    const condition = {
+      active: true,
+      currentWindow: true,
+    };
+    chrome.tabs.query(condition, ([tab]) => {
+      communicator.toBackground({
+        action: 'CREATE_SNAPSHOT',
+        data: {
+          host: new URL(tab.url).hostname,
+          url: tab.url
+        },
+      });
     });
   }
 
@@ -50,16 +60,6 @@ export default class CentralButton {
         this.$emit('reload');
         break;
     }
-  }
-
-  async view() {
-    const listStore = new Storage({ namespace: 'SNAPSHOT_NAME_LIST' });
-    const list = (await listStore.get('all')) || [];
-    list.map(async item => {
-      const store = new Storage({ namespace: item });
-      const d = await store.get();
-      console.log(d);
-    });
   }
 
   render() {
@@ -85,16 +85,19 @@ export default class CentralButton {
             <b-icon size="is-small" pack="fas" icon="camera" />
             <span>Shot</span>
           </a>
-          <a class="button" disabled={!this.allowClear}>
+          <a
+            class="button"
+            disabled={!this.allowClear}
+            onClick={() => this.$emit('clear')}
+          >
             <span class="icon is-small">
               <i class="fas fa-broom" />
             </span>
             <span>Clear</span>
           </a>
-          <a class="button" onClick={this.view}>view</a>
         </div>
         <b-collapse open={this.openCollapse}>
-          <b-field position="is-centered">
+          <b-field position="is-centered" style="margin-bottom:8px">
             <b-input
               placeholder="Description..."
               type="search"
@@ -102,7 +105,12 @@ export default class CentralButton {
               icon-pack="fas"
             />
             <p class="control">
-              <button class="button is-primary" onClick={this.createSnapshot}>save</button>
+              <button
+                class="button is-primary"
+                onClick={this.createSnapshot}
+              >
+                save
+              </button>
             </p>
           </b-field>
         </b-collapse>

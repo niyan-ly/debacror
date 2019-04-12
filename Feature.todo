@@ -1,0 +1,6 @@
+- Debug Mode Support
+  [] step execution
+  [] deal with not existed element
+
+- Devtool Enhancement
+  [] actions graph editor

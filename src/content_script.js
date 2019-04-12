@@ -1,5 +1,5 @@
 import finder from '@medv/finder';
-import { communicator, Record, dom } from './util';
+import { communicator, Storage, dom } from './util';
 
 let EVENT_TARGET = null;
 let HAS_INJECTED = false;
@@ -87,10 +87,10 @@ async function delay(millisecond) {
 }
 
 async function restore({ delayValue = 400 }) {
-  const record = new Record({ name: 'record' });
-  const targets = await record.getActions();
+  const store = new Storage({ namespace: location.hostname });
+  const record = await store.get(location.href);
 
-  for (const action of targets) {
+  for (const action of record.actions) {
     const element = dom.get(action.selector);
     await delay(Number(delayValue));
 
@@ -134,3 +134,10 @@ communicator.onMessageForCS = (request, ...others) => {
   const doThis = executor[request.action];
   doThis instanceof Function ? doThis(request, ...others) : null;
 };
+
+/**
+ * tell extesion is available or not
+ */
+communicator.toBackground({
+  action: 'AVAILABLE'
+});

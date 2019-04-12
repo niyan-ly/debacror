@@ -1,6 +1,7 @@
 import Component from 'vue-class-component';
 import { Watch } from 'vue-property-decorator';
 import { Storage } from '../../util';
+import Empty from './empty';
 
 @Component({
   props: {
@@ -15,8 +16,7 @@ export default class Snapshot {
   @Watch('selectedTabIndex')
   async updateView() {
     if (this.selectedTabIndex === 1) {
-      // console.log(await this.snapshotList.get());
-      this.renderList = await this.snapshotList.get('all');
+      this.renderList = (await this.snapshotList.get('all')) || [];
     }
   }
   
@@ -28,6 +28,7 @@ export default class Snapshot {
             <p class="title is-5">{ name }</p>
           ))
         }
+        <Empty empty={!this.renderList.length} tips="No Snapshot Captured" />
       </section>
     );
   }

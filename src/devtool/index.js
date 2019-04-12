@@ -12,11 +12,11 @@
 //     return <App />;
 //   }
 // });
-chrome.devtools.panels.create(
-  'My Panel',
-  'MyPanelIcon.png',
-  'Panel.html',
-  function() {
-    // code invoked on panel creation
-  },
-);
+// chrome.devtools.panels.create(
+//   'My Panel',
+//   'MyPanelIcon.png',
+//   'Panel.html',
+//   function() {
+//     // code invoked on panel creation
+//   },
+// );
