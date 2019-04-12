@@ -7,6 +7,20 @@ const EMsgType = {
   TO_POPUP: 'TO_POPUP',
 };
 
+function isEmpty(obj) {
+  if (!obj) {
+    return true;
+  }
+
+  if (Array.isArray(obj)) {
+    return !obj.length;
+  }
+
+  if (typeof obj === 'object') {
+    return !Object.getOwnPropertyNames(obj).length;
+  }
+}
+
 class Communicator {
   onMessageForCS() {}
   onMessageForBG() {}
@@ -184,72 +198,6 @@ class Storage {
   }
 }
 
-/**
- * @description A Record means a series of actions
- * Record could manipulate actions
- */
-class Record {
-  /**
-   * @typedef Action
-   * @type {Object}
-   * @property {Number} id
-   * @property {String} selector
-   * @property {String} type event type
-   * @property {String} value
-   */
-
-  constructor({ name }) {
-    this.storage = new Storage({ namespace: name });
-  }
-
-  setInfo({ description, url }) {
-    this.storage.set({
-      description,
-      url,
-    });
-  }
-
-  getInfo() {
-    return this.storage.getKeys(['name', 'description', 'url']);
-  }
-
-  /**
-   * - create a new namespace
-   * - copy existed data under instance namespace into new one,
-   * - point [this.storage] to new namespace
-   * - free occupied space
-   */
-  async rename(name) {
-    const newStore = new Storage({ namespace: name });
-    const originStoreContent = this.storage.get();
-    newStore.set(originStoreContent);
-    this.storage = newStore;
-    this.storage.empty();
-  }
-
-  getActions() {
-    return this.storage.get('actions');
-  }
-
-  /**
-   * @param  {Action[]} actions
-   */
-  async addActions(...actions) {
-    const savedActions = (await this.getActions()) || [];
-
-    savedActions.push(
-      ...actions.map((action, index) => ({
-        ...action,
-        id: savedActions.length + index,
-      })),
-    );
-
-    this.storage.set({
-      actions: savedActions,
-    });
-  }
-}
-
 export const dom = new DOMManipulator();
 export const communicator = new Communicator();
-export { Storage, Record };
+export { Storage, isEmpty };

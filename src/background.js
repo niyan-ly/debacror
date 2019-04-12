@@ -1,4 +1,4 @@
-import { Record, Storage, communicator } from './util';
+import { Storage, communicator, isEmpty } from './util';
 
 const snapshotList = new Storage({
   namespace: 'SNAPSHOT_NAME_LIST',
@@ -18,7 +18,7 @@ communicator.onMessageForBG = async ({ action, data }, sender) => {
       const store = new Storage({ namespace: tabHost });
       let originData = await store.get(tabUrl);
 
-      if (!Object.keys(originData).length) {
+      if (isEmpty(originData)) {
         originData = {
           actions: [],
           url: tabUrl,
@@ -44,11 +44,11 @@ communicator.onMessageForBG = async ({ action, data }, sender) => {
       const originList = (await snapshotList.get('all')) || [];
       const frame = await store.get(url);
       const snapshotName = `snapshot-${originList.length + 1}`;
-      const snapshotStore = new Record({ name: snapshotName });
+      const snapshotStore = new Storage({ namespace: snapshotName });
       snapshotList.set({
         all: [...originList, snapshotName],
       });
-      snapshotStore.storage.set(frame);
+      snapshotStore.set(frame);
     },
     /**
      * when extension is available
