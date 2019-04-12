@@ -1,5 +1,5 @@
 import Component from 'vue-class-component';
-import { communicator } from '../../util';
+import { signal } from '../../util';
 
 @Component({
   props: {
@@ -16,6 +16,7 @@ import { communicator } from '../../util';
 })
 export default class CentralButton {
   openCollapse = false;
+  desc = '';
 
   get icon() {
     const statuMapper = {
@@ -38,13 +39,18 @@ export default class CentralButton {
       currentWindow: true,
     };
     chrome.tabs.query(condition, ([tab]) => {
-      communicator.toBackground({
+      signal.toBackground({
         action: 'CREATE_SNAPSHOT',
         data: {
           host: new URL(tab.url).hostname,
-          url: tab.url
+          url: tab.url,
+          favIconUrl: tab.favIconUrl,
+          description: this.desc
         },
       });
+
+      this.openCollapse = false;
+      this.desc = '';
     });
   }
 
@@ -66,7 +72,7 @@ export default class CentralButton {
     return (
       <section>
         <div class="buttons has-addons is-centered">
-          <a class="button" onClick={this.toggleRecord}>
+          <a class={{button: true, 'is-danger': this.statu === 'record'}} onClick={this.toggleRecord}>
             <b-tooltip
               active={this.statu === 'reload'}
               label="this page need to reload."
@@ -99,10 +105,13 @@ export default class CentralButton {
         <b-collapse open={this.openCollapse}>
           <b-field position="is-centered" style="margin-bottom:8px">
             <b-input
+              value={this.desc}
               placeholder="Description..."
               type="search"
               icon="info"
               icon-pack="fas"
+              maxlength={20}
+              onInput={v => this.desc = v}
             />
             <p class="control">
               <button

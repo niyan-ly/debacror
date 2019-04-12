@@ -21,7 +21,7 @@ function isEmpty(obj) {
   }
 }
 
-class Communicator {
+class Signal {
   onMessageForCS() {}
   onMessageForBG() {}
   onMessageForPopUp() {}
@@ -186,7 +186,7 @@ class Storage {
             await this.save(this.cahce);
           } else {
             /** notify popup page to update view */
-            communicator.toPopUp({
+            signal.toPopUp({
               action: 'UPDATE_VIEW',
             });
           }
@@ -199,5 +199,5 @@ class Storage {
 }
 
 export const dom = new DOMManipulator();
-export const communicator = new Communicator();
+export const signal = new Signal();
 export { Storage, isEmpty };

@@ -1,10 +1,19 @@
-import { Storage, communicator, isEmpty } from './util';
+import { Storage, signal, isEmpty } from './util';
+
+/**
+ * @typedef {Object} Record
+ * @property {String} host
+ * @property {String} url
+ * @property {Object[]} actions
+ * @property {String} description
+ * @property {String} favIconUrl
+ */
 
 const snapshotList = new Storage({
   namespace: 'SNAPSHOT_NAME_LIST',
 });
 
-communicator.onMessageForBG = async ({ action, data }, sender) => {
+signal.onMessageForBG = async ({ action, data }, sender) => {
   const { tab } = sender;
 
   const actionMap = {
@@ -35,20 +44,27 @@ communicator.onMessageForBG = async ({ action, data }, sender) => {
     /**
      * will be triggered by popup
      */
-    async CREATE_SNAPSHOT({ host, url }) {
+    async CREATE_SNAPSHOT({ host, url, description, favIconUrl }) {
       /**
        * [warn] this may cause issues when multiple snapshot
        * is created at the same time.
        */
       const store = new Storage({ namespace: host });
       const originList = (await snapshotList.get('all')) || [];
+      /**
+       * @type {Record}
+       */
       const frame = await store.get(url);
       const snapshotName = `snapshot-${originList.length + 1}`;
       const snapshotStore = new Storage({ namespace: snapshotName });
       snapshotList.set({
         all: [...originList, snapshotName],
       });
-      snapshotStore.set(frame);
+      snapshotStore.set({
+        ...frame,
+        description,
+        favIconUrl
+      });
     },
     /**
      * when extension is available

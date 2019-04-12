@@ -1,6 +1,6 @@
 import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
-import { Storage, communicator } from '../../util';
+import { Storage, signal } from '../../util';
 // import AppFooter from './footer';
 import ActionList from './action-list';
 import CentralButton from './central-button';
@@ -36,7 +36,7 @@ export default class App {
       UPDATE_VIEW: this.updateView.bind(this),
     };
 
-    communicator.onMessageForPopUp = request => {
+    signal.onMessageForPopUp = request => {
       const handler = messageHandler[request.action];
       handler instanceof Function ? handler() : null;
     };
@@ -49,7 +49,7 @@ export default class App {
 
       this.updateView();
 
-      communicator.toContentScript(
+      signal.toContentScript(
         tab.id,
         {
           action: 'IS_RECORDING',
@@ -83,7 +83,7 @@ export default class App {
   startRecord() {
     this.isRecording = true;
     chrome.tabs.query(this.CONDITION, ([tab]) => {
-      communicator.toContentScript(tab.id, {
+      signal.toContentScript(tab.id, {
         action: 'START_RECORD',
       });
     });
@@ -99,13 +99,13 @@ export default class App {
   stopRecord() {
     this.isRecording = false;
     chrome.tabs.query(this.CONDITION, ([tab]) => {
-      communicator.toContentScript(tab.id, { action: 'END_RECORD' });
+      signal.toContentScript(tab.id, { action: 'END_RECORD' });
     });
   }
 
   // restore() {
   //   chrome.tabs.query(this.CONDITION, ([tab]) => {
-  //     communicator.toContentScript(tab.id, {
+  //     signal.toContentScript(tab.id, {
   //       action: 'RESTORE',
   //       delayValue: this.delayValue,
   //     });

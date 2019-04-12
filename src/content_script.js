@@ -1,5 +1,5 @@
 import finder from '@medv/finder';
-import { communicator, Storage, dom } from './util';
+import { signal, Storage, dom } from './util';
 
 let EVENT_TARGET = null;
 let HAS_INJECTED = false;
@@ -19,7 +19,7 @@ function onInputEnd({ target }) {
       },
     };
 
-    communicator.toBackground(message);
+    signal.toBackground(message);
   }
 
   // blue mean this action is end-up
@@ -59,7 +59,7 @@ function clickListener(e) {
     },
   };
 
-  communicator.toBackground(message);
+  signal.toBackground(message);
 }
 
 /**
@@ -119,7 +119,7 @@ async function restore({ delayValue = 400 }) {
   }
 }
 
-communicator.onMessageForCS = (request, ...others) => {
+signal.onMessageForCS = (request, ...others) => {
   const executor = {
     START_RECORD: inject,
     END_RECORD: detach,
@@ -138,6 +138,6 @@ communicator.onMessageForCS = (request, ...others) => {
 /**
  * tell extesion is available or not
  */
-communicator.toBackground({
+signal.toBackground({
   action: 'AVAILABLE'
 });
