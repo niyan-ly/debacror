@@ -25,6 +25,6 @@ module.exports = {
     semi: ['warn'],
     'no-console': ['error', { allow: ['warn', 'error'] }],
     quotes: ['warn', 'single'],
-    indent: ['error', 2],
+    indent: [2, 2, { "SwitchCase": 1 }],
   },
 };

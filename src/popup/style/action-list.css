@@ -1,6 +1,7 @@
 .action-list {
   max-height: 220px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .action-list::-webkit-scrollbar {

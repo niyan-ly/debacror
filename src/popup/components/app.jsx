@@ -1,16 +1,18 @@
 import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
-import { storage, communicator } from '../../util';
+import { Record, communicator } from '../../util';
 import AppFooter from './footer';
 import ActionList from './action-list';
 import CentralButton from './central-button';
+import Snapshot from './snapshot';
 
 @Component
 export default class App {
-  delayValue = 400;
   isRecording = false;
   records = [];
+  recordStore = new Record({ name: 'record' });
   needReload = false;
+  selectedTabIndex = 0;
   /**
    * chrome tab filter
    */
@@ -22,8 +24,8 @@ export default class App {
   get recordStatu() {
     if (this.needReload) return 'reload';
     if (this.isRecording) {
-      return 'pause';
-    } else return 'record';
+      return 'record';
+    } else return 'pause';
   }
 
   async mounted() {
@@ -61,9 +63,9 @@ export default class App {
    * fetch stored record
    */
   async fetchRecords() {
-    const { targets = [] } = await storage.get(['targets']);
+    const targets = await this.recordStore.getActions();
 
-    return targets;
+    return targets || [];
   }
 
   async updateView() {
@@ -80,7 +82,7 @@ export default class App {
   }
 
   clearRecordHistory() {
-    storage.set({ targets: [] });
+    // storage.set({ targets: [] });
     this.updateView();
   }
 
@@ -91,18 +93,14 @@ export default class App {
     });
   }
 
-  restore() {
-    chrome.tabs.query(this.CONDITION, ([tab]) => {
-      communicator.toContentScript(tab.id, {
-        action: 'RESTORE',
-        delayValue: this.delayValue,
-      });
-    });
-  }
-
-  updateDelayValue(value) {
-    this.delayValue = Number(value);
-  }
+  // restore() {
+  //   chrome.tabs.query(this.CONDITION, ([tab]) => {
+  //     communicator.toContentScript(tab.id, {
+  //       action: 'RESTORE',
+  //       delayValue: this.delayValue,
+  //     });
+  //   });
+  // }
 
   reloadCurrentPage() {
     chrome.tabs.reload();
@@ -122,25 +120,28 @@ export default class App {
           position="is-centered"
           size="is-small"
           type="is-toggle"
+          onChange={index => this.selectedTabIndex = index}
         >
           <b-tab-item label="RECORD" icon-pack="fas" icon="video">
             <CentralButton
-              type={this.recordStatu}
+              statu={this.recordStatu}
+              allow-shot={this.records.length}
+              allow-clear={this.records.length}
+              onStart={this.startRecord}
               onPause={this.stopRecord}
-              onRecord={this.startRecord}
               onReload={this.reloadCurrentPage}
             />
             <p class="title is-5">Actions</p>
-            <button class="button is-small" onClick={this.restore}>
-              restore
-            </button>
-            <button class="button is-small" onClick={this.clearRecordHistory}>
-              clean
-            </button>
             <hr style="margin:8px 0;" />
-            <ActionList dataSource={this.records} />
+            <ActionList data-source={this.records} />
           </b-tab-item>
-          <b-tab-item label="ACTIONS" icon-pack="fas" icon="history" />
+          <b-tab-item
+            label="SNAPSHOTS"
+            icon-pack="fas"
+            icon="history"
+          >
+            <Snapshot selected-tab-index={this.selectedTabIndex} />
+          </b-tab-item>
         </b-tabs>
         <AppFooter />
       </div>

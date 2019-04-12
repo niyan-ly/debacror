@@ -12,7 +12,7 @@ import ActionTag from './action-tag';
 export default class ActionList {
   render() {
     return (
-      <section class="action-list">
+      <section class="action-list is-right">
         {
           this.dataSource.map(d => (
             <ActionTag {...{props: d}} />

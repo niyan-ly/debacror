@@ -1,9 +1,13 @@
 .action-tag {
   text-align: left;
   width: 90%;
-  margin: 8px auto;
+  margin: 4px 0;
 }
 
-.action-tag > .title {
-  margin: 0 8px;
+.tag-close {
+  cursor: pointer;
+}
+
+.tag-close:hover {
+  background-color: #e8e8e8;
 }

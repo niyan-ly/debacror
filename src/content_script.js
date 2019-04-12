@@ -1,5 +1,5 @@
 import finder from '@medv/finder';
-import { communicator, storage, dom } from './util';
+import { communicator, Record, dom } from './util';
 
 let EVENT_TARGET = null;
 let HAS_INJECTED = false;
@@ -13,8 +13,8 @@ function onInputEnd({ target }) {
     const message = {
       action: 'SAVE',
       data: {
-        action: 'input',
-        target: finder(target),
+        type: 'input',
+        selector: finder(target),
         value: target.value,
       },
     };
@@ -54,8 +54,8 @@ function clickListener(e) {
   const message = {
     action: 'SAVE',
     data: {
-      action: 'click',
-      target: finder(e.target),
+      type: 'click',
+      selector: finder(e.target),
     },
   };
 
@@ -87,16 +87,17 @@ async function delay(millisecond) {
 }
 
 async function restore({ delayValue = 400 }) {
-  const { targets = [] } = await storage.get(['targets']);
+  const record = new Record({ name: 'record' });
+  const targets = await record.getActions();
 
-  for (const record of targets) {
-    const element = dom.get(record.target);
+  for (const action of targets) {
+    const element = dom.get(action.selector);
     await delay(Number(delayValue));
 
-    if (record.action === 'input') {
-      element.value = record.value;
-      record.value &&
-        record.value.split('').map(letter => {
+    if (action.type === 'input') {
+      element.value = action.value;
+      action.value &&
+        action.value.split('').map(letter => {
           const event = new Event('input', {
             bubbles: true,
             cancelable: true,
@@ -107,7 +108,7 @@ async function restore({ delayValue = 400 }) {
         });
     }
 
-    if (record.action === 'click') {
+    if (action.type === 'click') {
       const event = new Event('click', {
         bubbles: true,
         cancelable: true,
@@ -123,7 +124,7 @@ communicator.onMessageForCS = (request, ...others) => {
     START_RECORD: inject,
     END_RECORD: detach,
     RESTORE: restore,
-    IS_RECORDING(_1, _2, sendResponse) {
+    IS_RECORDING(request, sender, sendResponse) {
       sendResponse({
         result: HAS_INJECTED,
       });

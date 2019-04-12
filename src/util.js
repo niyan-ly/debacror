@@ -58,7 +58,7 @@ class Communicator {
         ...message,
         type: EMsgType.TO_CS,
       },
-      callback
+      callback,
     );
   }
 
@@ -85,67 +85,167 @@ class DOMManipulator {
   }
 }
 
+/**
+ * @description use this chrome storage helper for
+ * namspaced storage and performance optimization.
+ *
+ * !NOTE: wait for [init] before doing anything.
+ */
 class Storage {
-  queue = [];
-  locked = false;
+  /** indicate save action is busy or not */
+  lock = false;
+  /** cache the latest snapshot */
+  cahce = null;
+
+  constructor({ namespace = '' }) {
+    this.namespace = namespace;
+  }
+
+  empty() {
+    return new Promise(res => {
+      chrome.storage.sync.remove(this.namespace, res);
+    });
+  }
+
   /**
-   * @param {String[]} key
-   * @returns {Promise<Object>}
+   * @description return whole storage under namespace when receive empty param
+   * @param {String} key
    */
   get(key) {
     return new Promise(res => {
-      chrome.storage.sync.get(key, res);
+      chrome.storage.sync.get(
+        this.namespace,
+        ({ [this.namespace]: result = {} }) => {
+          res(key ? result[key] : result);
+        },
+      );
     });
   }
 
   /**
-   * @param {Object} data
-   * @returns {Promise<Object>}
+   * @param {String[]} keys 
    */
-  set(data) {
-    return new Promise(res => {
-      chrome.storage.sync.set(data, res);
+  async getKeys(keys) {
+    const store = await this.get();
+    const r = {};
+
+    keys.map(key => {
+      r[key] = store[key];
     });
+    
+    return r;
   }
 
   /**
-   * @param {String} key
-   * @param {String} value
+   * @param {Object} dictionary
    */
-  add(key, value) {
-    this.queue.push({ key, value });
-    if (!this.locked) {
-      this.equeue();
-    }
+  set(dictionary) {
+    /** cache will always point to the newest snapshot */
+    this.cahce = dictionary;
+    /**
+     * each save action will keep their own snapshot
+     */
+    this.save(dictionary);
   }
 
-  /**
-   * @description DO NOT call this method manually
+  /** 
+   * @description internal called only
+   * @private
    */
-  async equeue() {
-    this.locked = true;
+  async save(snapshot) {
+    if (this.lock || !snapshot) return;
 
-    const { key, value } = this.queue.shift();
-    // retrieve existed record
-    const { [key]: existedValue = [] } = (await this.get([key])) || {};
-    // transform non-Array value into array
-    const useValue = Array.isArray(value) ? value : [value];
-    // set new value
-    await this.set({ [key]: [...existedValue, ...useValue] });
-    if (this.queue.length) {
-      // execute next action
-      await this.equeue();
-    } else {
-      // do clean up
-      this.locked = false;
-      // notify popup to update UI
-      communicator.toPopUp({
-        action: 'UPDATE_VIEW',
-      });
-    }
+    const store = await this.get();
+
+    chrome.storage.sync.set(
+      {
+        [this.namespace]: { ...store, ...snapshot },
+      },
+      () => {
+        /**
+         * when cache has been updated after last save action,
+         * then, an update to chrome storage is needed
+         */
+        if (this.cahce !== snapshot) {
+          this.lock = false;
+          this.save(this.cahce);
+        } else {
+          /** notify popup page to update view */
+          communicator.toPopUp({
+            action: 'UPDATE_VIEW',
+          });
+        }
+      },
+    );
   }
 }
 
-export const storage = new Storage();
+/**
+ * @description A Record means a series of actions
+ * Record could manipulate actions
+ */
+class Record {
+  /**
+   * @typedef Action
+   * @type {Object}
+   * @property {Number} id
+   * @property {String} selector
+   * @property {String} type event type
+   * @property {String} value
+   */
+
+  constructor({ name }) {
+    this.storage = new Storage({ namespace: name });
+  }
+
+  setInfo({ description, url }) {
+    this.storage.set({
+      description,
+      url,
+    });
+  }
+
+  getInfo() {
+    return this.storage.getKeys(['name', 'description', 'url']);
+  }
+
+  /**
+   * - create a new namespace
+   * - copy existed data under instance namespace into new one,
+   * - point [this.storage] to new namespace
+   * - free occupied space
+   */
+  async rename(name) {
+    const newStore = new Storage({ namespace: name });
+    const originStoreContent = this.storage.get();
+    newStore.set(originStoreContent);
+    this.storage = newStore;
+    this.storage.empty();
+  }
+
+  getActions() {
+    return this.storage.get('actions');
+  }
+
+  /**
+   * @param  {Action[]} actions
+   */
+  async addActions(...actions) {
+    const savedActions = (await this.getActions()) || [];
+
+    savedActions.push(
+      ...actions.map((action, index) => ({
+        ...action,
+        id: savedActions.length + index,
+      })),
+    );
+
+    this.storage.set({
+      actions: savedActions,
+    });
+  }
+}
+
 export const dom = new DOMManipulator();
 export const communicator = new Communicator();
+export { Storage, Record };

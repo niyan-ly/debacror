@@ -8,14 +8,6 @@ import './style/solid.min.css';
 import './style/fontawesome.min.css';
 
 Vue.use(Buefy);
-Vue.component(
-  'g-space',
-  Vue.extend({
-    render() {
-      return <div style="display:inline-block;width: 8px;height:2px" />;
-    },
-  }),
-);
 
 new Vue({
   el: '#app',

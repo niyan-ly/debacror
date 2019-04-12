@@ -2,8 +2,8 @@ import Component from 'vue-class-component';
 
 @Component({
   props: {
-    action: String,
-    target: String,
+    type: String,
+    selector: String,
     value: [String, Number],
   },
 })
@@ -14,24 +14,55 @@ export default class ActionTag {
       click: 'is-warning',
     };
 
-    return actionMap[this.action];
+    return actionMap[this.type];
   }
 
-  cut(str = '') {
-    const maxLength = 12;
-    const substr = str.substr(0, maxLength).concat('...');
+  get valueLength() {
+    const value = this.value || '';
+    return value.length > 10 ? 10 : value.length;
+  }
 
-    return str.length > maxLength ? substr : str;
+  cut(str = '', length = 8) {
+    const substr = str.substr(0, length).concat('...');
+
+    return str.length > length ? substr : str;
   }
 
   render() {
     return (
       <section class="action-tag">
-        <b-tag type={this.actionType}>{this.action}</b-tag>
-        <span class="title is-6">{this.target}</span>
-        <span class="action-tag--content">
-          {this.cut(this.value)}
-        </span>
+        <b-taglist attached>
+          <b-tag type={this.actionType}>{this.type}</b-tag>
+          <b-tag>
+            <b-tooltip
+              position="is-bottom"
+              label={this.selector}
+              size="is-small"
+              type="is-dark"
+              multilined
+            >
+              {this.cut(this.selector, 26 - this.valueLength)}
+            </b-tooltip>
+          </b-tag>
+          {this.value ? (
+            <b-tag type="is-dark">
+              <b-tooltip
+                position="is-bottom"
+                label={this.value}
+                size="is-small"
+                type="is-dark"
+                multilined
+              >
+                {this.cut(this.value, this.valueLength)}
+              </b-tooltip>
+            </b-tag>
+          ) : (
+            <span />
+          )}
+          <b-tag class="tag-close">
+            <b-icon pack="fas" icon="times" />
+          </b-tag>
+        </b-taglist>
       </section>
     );
   }
