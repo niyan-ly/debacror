@@ -81,7 +81,6 @@ export default class App {
 
   async updateView() {
     this.actions = await this.fetchActions();
-    console.log(this.actions);
   }
 
   startRecord() {
