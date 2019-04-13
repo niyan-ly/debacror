@@ -1,4 +1,4 @@
-import { Storage, signal, isEmpty } from './util';
+import { Storage, signal, isEmpty, recordPrefix } from './util';
 
 /**
  * @typedef {Object} Record
@@ -9,8 +9,17 @@ import { Storage, signal, isEmpty } from './util';
  * @property {String} favIconUrl
  */
 
+let activeTabList = [];
+
 const snapshotList = new Storage({
   namespace: 'SNAPSHOT_NAME_LIST',
+});
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  const storage = new Storage({
+    namespace: recordPrefix.concat(tabId),
+  });
+  storage.empty();
 });
 
 signal.onMessageForBG = async ({ action, data }, sender) => {
@@ -20,41 +29,38 @@ signal.onMessageForBG = async ({ action, data }, sender) => {
     /**
      * will be triggered by content script
      */
-    async SAVE() {
-      const { url: tabUrl } = tab;
-      const { hostname: tabHost } = new URL(tabUrl);
-
-      const store = new Storage({ namespace: tabHost });
-      let originData = await store.get(tabUrl);
+    async SAVE(data) {
+      const name = recordPrefix.concat(tab.id);
+      const store = new Storage({ namespace: name });
+      let originData = await store.get();
 
       if (isEmpty(originData)) {
         originData = {
           actions: [],
-          url: tabUrl,
-          host: tabHost,
+          initialURL: tab.url,
+          favIconUrl: tab.favIconUrl,
         };
       }
 
       originData.actions.push(data);
 
-      store.set({
-        [tabUrl]: originData,
-      });
+      store.set({ ...originData });
     },
     /**
      * will be triggered by popup
      */
-    async CREATE_SNAPSHOT({ host, url, description, favIconUrl }) {
+    async CREATE_SNAPSHOT({ id, description, time }) {
       /**
        * [warn] this may cause issues when multiple snapshot
        * is created at the same time.
        */
-      const store = new Storage({ namespace: host });
+      const name = recordPrefix.concat(id);
+      const store = new Storage({ namespace: name });
       const originList = (await snapshotList.get('all')) || [];
       /**
        * @type {Record}
        */
-      const frame = await store.get(url);
+      const frame = await store.get();
       const snapshotName = `snapshot-${originList.length + 1}`;
       const snapshotStore = new Storage({ namespace: snapshotName });
       snapshotList.set({
@@ -63,14 +69,14 @@ signal.onMessageForBG = async ({ action, data }, sender) => {
       snapshotStore.set({
         ...frame,
         description,
-        favIconUrl
+        time,
       });
     },
     /**
      * when extension is available
-     * 
+     *
      * triggered by content script
-      */
+     */
     AVAILABLE() {
       chrome.browserAction.setIcon({
         tabId: tab.id,
@@ -82,6 +88,51 @@ signal.onMessageForBG = async ({ action, data }, sender) => {
       chrome.browserAction.setPopup({
         tabId: tab.id,
         popup: 'popup.html',
+      });
+
+      /**
+       * track the actived tab that has been redirected to
+       * new host, activate the record under the new host
+       */
+      if (activeTabList.find(i => i.id === tab.id)) {
+        signal.toContentScript(tab.id, {
+          action: 'START_RECORD',
+          /**
+           * tell content script that it has been redirected
+           */
+          from: 'BG',
+        });
+      }
+    },
+    /**
+     * will be triggered by popup
+     */
+    async RM_SNAPSHOT({ name }) {
+      const nameList = await snapshotList.get('all');
+      if (nameList.includes(name)) {
+        const storage = new Storage({ namespace: name });
+        storage.empty();
+        nameList.splice(nameList.indexOf(name), 1);
+        snapshotList.set({
+          all: nameList,
+        });
+      }
+    },
+    /**
+     * wiil be triggered by popup
+     *
+     * since tab id is unique in a browser session,
+     * so use it safely as identity.
+     */
+    START_RECORD(tabInfo) {
+      activeTabList.push(tabInfo);
+    },
+    /**
+     * will be triggered by popup
+     */
+    END_RECORD({ id }) {
+      activeTabList = activeTabList.filter(tabInfo => {
+        return tabInfo.id !== id;
       });
     },
   };

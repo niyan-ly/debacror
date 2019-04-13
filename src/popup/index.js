@@ -1,9 +1,8 @@
 import Vue from 'vue';
 import Buefy from 'buefy';
-import 'buefy/dist/buefy.css';
 
 import App from './components/app';
-import './style/style.css';
+import './style/style.scss';
 import './style/solid.min.css';
 import './style/fontawesome.min.css';
 

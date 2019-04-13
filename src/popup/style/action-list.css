@@ -5,10 +5,10 @@
 }
 
 .action-list::-webkit-scrollbar {
-  width: 2px;
+  width:4px;
   background-color: #aaa;
 }
 
 .action-list::-webkit-scrollbar-thumb {
-  background-color: #714dd2;
+  background-color: #209cee;
 }

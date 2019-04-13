@@ -1,0 +1,10 @@
+@import '~bulma/sass/utilities/_all';
+
+$primary: $cyan;
+$link: $primary;
+$colors: (
+  'primary': (
+    $primary,
+    $primary-invert,
+  ),
+);

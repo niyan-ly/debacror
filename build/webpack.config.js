@@ -45,7 +45,7 @@ module.exports = {
         options: {}
       },
       {
-        test: /.css$/,
+        test: /.s?css$/,
         use: [
           {
             loader: 'vue-style-loader',
@@ -58,7 +58,8 @@ module.exports = {
             options: {
               importLoaders: 1
             }
-          }
+          },
+          'sass-loader'
         ]
       },
       {

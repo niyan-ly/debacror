@@ -1,3 +1,3 @@
-#### Extension Messaging
+### lint style
 
-We use the capital field of `type` to recognize which action to execute when receiving messages.
+just run `npm run lint` before you `pull request`.

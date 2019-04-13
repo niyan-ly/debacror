@@ -1,6 +1,6 @@
 import Component from 'vue-class-component';
 import Logo from '../assets/logo.svg';
-import { Storage, signal } from '../../util';
+import { Storage, signal, recordPrefix } from '../../util';
 // import AppFooter from './footer';
 import ActionList from './action-list';
 import CentralButton from './central-button';
@@ -10,7 +10,10 @@ import TabInfo from './tab-info';
 @Component
 export default class App {
   isRecording = false;
-  records = [];
+  actions = [];
+  /**
+   * @type {Storage}
+   */
   store = null;
   needReload = false;
   selectedTabIndex = 0;
@@ -44,7 +47,7 @@ export default class App {
     chrome.tabs.query(this.CONDITION, ([tab]) => {
       this.tab = tab;
       this.store = new Storage({
-        namespace: new URL(tab.url).hostname
+        namespace: recordPrefix.concat(tab.id),
       });
 
       this.updateView();
@@ -70,36 +73,39 @@ export default class App {
   /**
    * fetch stored record
    */
-  async fetchRecords() {
-    const record = await this.store.get(this.tab.url);
+  async fetchActions() {
+    const actions = await this.store.get('actions');
 
-    return record && record.actions || [];
+    return actions || [];
   }
 
   async updateView() {
-    this.records = await this.fetchRecords();
+    this.actions = await this.fetchActions();
+    console.log(this.actions);
   }
 
   startRecord() {
     this.isRecording = true;
     chrome.tabs.query(this.CONDITION, ([tab]) => {
-      signal.toContentScript(tab.id, {
+      signal.broadcast(tab.id, {
         action: 'START_RECORD',
+        data: tab,
       });
     });
   }
 
   async clearRecordHistory() {
-    await this.store.set({
-      [this.tab.url]: {}
-    });
+    await this.store.empty();
     this.updateView();
   }
 
   stopRecord() {
     this.isRecording = false;
     chrome.tabs.query(this.CONDITION, ([tab]) => {
-      signal.toContentScript(tab.id, { action: 'END_RECORD' });
+      signal.broadcast(tab.id, {
+        action: 'END_RECORD',
+        data: tab
+      });
     });
   }
 
@@ -123,7 +129,7 @@ export default class App {
         <div class="bg-mask" />
         <div class="title is-5 app-top">
           <img src={Logo} width="32px" />
-          <span class="title is-4">Chrome-Ext</span>
+          <span class="title is-4">debacror</span>
         </div>
         <b-tabs
           class="app-tab"
@@ -135,20 +141,17 @@ export default class App {
           <b-tab-item label="RECORD" icon-pack="fas" icon="video">
             <CentralButton
               statu={this.recordStatu}
-              allow-shot={this.records.length}
-              allow-clear={this.records.length}
+              allow-shot={this.actions.length}
+              allow-clear={this.actions.length}
               onStart={this.startRecord}
               onPause={this.stopRecord}
               onReload={this.reloadCurrentPage}
               onClear={this.clearRecordHistory}
             />
-            <TabInfo
-              url={this.tab.url}
-              favIconUrl={this.tab.favIconUrl}
-            />
+            <TabInfo />
             <p class="title is-5">Actions</p>
             <hr style="margin:8px 0;" />
-            <ActionList data-source={this.records} />
+            <ActionList data-source={this.actions} />
           </b-tab-item>
           <b-tab-item
             label="SNAPSHOTS"

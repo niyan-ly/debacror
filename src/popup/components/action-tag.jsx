@@ -12,12 +12,16 @@ export default class ActionTag {
     const actionMap = {
       input: 'is-info',
       click: 'is-warning',
+      redirect: 'is-danger',
     };
 
     return actionMap[this.type];
   }
 
   get valueLength() {
+    if (!this.selector) {
+      return 32;
+    }
     const value = this.value || '';
     return value.length > 10 ? 10 : value.length;
   }
@@ -33,17 +37,21 @@ export default class ActionTag {
       <section class="action-tag">
         <b-taglist attached>
           <b-tag type={this.actionType}>{this.type}</b-tag>
-          <b-tag>
-            <b-tooltip
-              position="is-bottom"
-              label={this.selector}
-              size="is-small"
-              type="is-dark"
-              multilined
-            >
-              {this.cut(this.selector, 26 - this.valueLength)}
-            </b-tooltip>
-          </b-tag>
+          {this.selector ? (
+            <b-tag>
+              <b-tooltip
+                position="is-bottom"
+                label={this.selector}
+                size="is-small"
+                type="is-dark"
+                multilined
+              >
+                {this.cut(this.selector, 26 - this.valueLength)}
+              </b-tooltip>
+            </b-tag>
+          ) : (
+            <span />
+          )}
           {this.value ? (
             <b-tag type="is-dark">
               <b-tooltip
@@ -59,9 +67,6 @@ export default class ActionTag {
           ) : (
             <span />
           )}
-          <b-tag class="tag-close">
-            <b-icon pack="fas" icon="times" />
-          </b-tag>
         </b-taglist>
       </section>
     );

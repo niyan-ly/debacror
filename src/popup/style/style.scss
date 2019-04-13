@@ -1,6 +1,10 @@
-@import url("footer.css");
-@import url("action-tag.css");
-@import url("action-list.css");
+@import url("base.scss");
+@import url('footer.css');
+@import url('action-tag.css');
+@import url('snapshot.css');
+@import url('action-list.css');
+@import '~bulma';
+@import '~buefy/src/scss/buefy';
 
 body {
   width: 340px;
@@ -15,7 +19,7 @@ body {
 }
 
 .app-top > img {
-  margin-right:8px;
+  margin-right: 8px;
 }
 
 div .is-bottom .record-button.is-large {
@@ -35,7 +39,7 @@ div .is-bottom .record-button.is-large {
   width: 100%;
   top: 0;
   height: 78px;
-  background-color: #7957d51c;
+  background-color: rgba(170, 221, 255, 0.2);
   z-index: -1;
 }
 

@@ -22,16 +22,32 @@ function isEmpty(obj) {
 }
 
 class Signal {
-  onMessageForCS() {}
-  onMessageForBG() {}
-  onMessageForPopUp() {}
+  contentScriptCallback = [];
+  backgroundCallback = [];
+  popupCallback = [];
+
+  set onMessageForCS(callback) {
+    this.contentScriptCallback.push(callback);
+  }
+  set onMessageForBG(callback) {
+    this.backgroundCallback.push(callback);
+  }
+  set onMessageForPopUp(callback) {
+    this.popupCallback.push(callback);
+  }
 
   constructor() {
     chrome.runtime.onMessage.addListener((request, ...rest) => {
       const executor = {
-        TO_CS: this.onMessageForCS,
-        TO_BG: this.onMessageForBG,
-        TO_POPUP: this.onMessageForPopUp,
+        TO_CS: (...arg) => {
+          this.contentScriptCallback.map(c => c(...arg));
+        },
+        TO_BG: (...arg) => {
+          this.backgroundCallback.map(c => c(...arg));
+        },
+        TO_POPUP: (...arg) => {
+          this.popupCallback.map(c => c(...arg));
+        },
       };
 
       const handler = executor[request.type];
@@ -58,11 +74,14 @@ class Signal {
   }
 
   /**
-   * @description actually, all messages that have been sent
-   * is broadcast, this method is just a literal restraint.
+   * @description send message to both specific tab and runtime(backgound, popup)
    */
-  broadcast(message) {
-    this.send(null, message);
+  broadcast(tabId, message) {
+    if (tabId) {
+      this.toContentScript(tabId, message);
+    }
+    this.send(EMsgType.TO_BG, message);
+    this.send(EMsgType.TO_POPUP);
   }
 
   toContentScript(tabId, message, callback) {
@@ -200,4 +219,5 @@ class Storage {
 
 export const dom = new DOMManipulator();
 export const signal = new Signal();
+export const recordPrefix = 'TEMP-';
 export { Storage, isEmpty };

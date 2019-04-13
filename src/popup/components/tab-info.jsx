@@ -1,17 +1,26 @@
 import Component from 'vue-class-component';
+import { Storage, recordPrefix } from '../../util';
 
-@Component({
-  props: {
-    url: {
-      type: String,
-      default: ''
-    },
-    favIconUrl: String
-  }
-})
+@Component
 export default class TabInfo {
+  url = '';
+
   get urlHost() {
     return this.url ? new URL(this.url).host : '';
+  }
+
+  mounted() {
+    const currentTab = {
+      active: true,
+      currentWindow: true
+    };
+    chrome.tabs.query(currentTab, async ([tab]) => {
+      const storage = new Storage({
+        namespace: recordPrefix.concat(tab.id)
+      });
+      const origin = await storage.get('initialURL');
+      this.url = origin || tab.url;
+    });
   }
 
   render() {
@@ -19,7 +28,7 @@ export default class TabInfo {
       <section>
         <b-taglist attached class="is-centered">
           <b-tag>
-            <img src={this.favIconUrl} width="24px" />
+            from
           </b-tag>
           <b-tag type="is-primary">
             {/* ? how to do filter in jsx */}

@@ -121,7 +121,18 @@ async function restore({ delayValue = 400 }) {
 
 signal.onMessageForCS = (request, ...others) => {
   const executor = {
-    START_RECORD: inject,
+    START_RECORD({ from }) {
+      inject();
+      if (from ==='BG') {
+        signal.toBackground({
+          action: 'SAVE',
+          data: {
+            type: 'redirect',
+            value: location.href
+          }
+        });
+      }
+    },
     END_RECORD: detach,
     RESTORE: restore,
     IS_RECORDING(request, sender, sendResponse) {

@@ -1,6 +1,6 @@
 import Component from 'vue-class-component';
 import { Watch } from 'vue-property-decorator';
-import { Storage } from '../../util';
+import { Storage, signal } from '../../util';
 import Empty from './empty';
 
 @Component({
@@ -19,40 +19,69 @@ export default class Snapshot {
       const snapshotNames = await this.snapshotList.get('all');
       for (const name of snapshotNames || []) {
         const store = new Storage({ namespace: name });
-        this.renderList.push(await store.get());
+        this.renderList.push({
+          ...(await store.get()),
+          name,
+        });
       }
     }
   }
 
+  mounted() {
+    signal.onMessageForPopUp = request => {
+      const executor = {
+        UPDATE_VIEW: this.updateView.bind(this)
+      };
+
+      const handler = executor[request.action];
+      handler ? handler(request) : null;
+    };
+  }
+
+  removeItem(name) {
+    signal.toBackground({
+      action: 'RM_SNAPSHOT',
+      data: {
+        name
+      },
+    });
+  }
+
   render() {
     return (
-      <section style="padding-left:2rem">
-        {this.renderList.map(({ favIconUrl, description }) => (
-          <div class="columns is-mobile">
-            <div class="column is-2">
-              {favIconUrl ? (
-                <figure class="image is-32x32">
-                  <img class="is-rounded" src={favIconUrl} />
-                </figure>
-              ) : (
-                <b-icon pack="fas" icon="question-circle" />
-              )}
-            </div>
-            <div class="column">
-              <span class="is-6">{description}</span>
-            </div>
-            <div class="column align-right">
-              <div class="buttons is-right has-addons show-on-hover">
-                <a class="button is-small is-primary">restore</a>
-                <a class="button is-small">
-                  <span class="is-small icon">
-                    <i class="fas fa-times"></i>
-                  </span>
-                </a>
+      <section class="snapshot">
+        {this.renderList.map(
+          ({ favIconUrl, description, time, name }) => (
+            <div class="columns is-mobile">
+              <div class="column is-2">
+                {favIconUrl ? (
+                  <figure class="image is-32x32">
+                    <img class="is-rounded" src={favIconUrl} />
+                  </figure>
+                ) : (
+                  <b-icon pack="fas" icon="question-circle" />
+                )}
+              </div>
+              <div class="column">
+                <p class="is-6">{description}</p>
+                <p class="subtitle is-7">{time}</p>
+              </div>
+              <div class="column align-right">
+                <div class="buttons is-right has-addons show-on-hover">
+                  <a class="button is-small is-primary">restore</a>
+                  <a
+                    class="button is-small"
+                    onClick={() => this.removeItem(name)}
+                  >
+                    <span class="is-small icon">
+                      <i class="fas fa-times" />
+                    </span>
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
         <Empty
           empty={!this.renderList.length}
           tips="No Snapshot Captured"

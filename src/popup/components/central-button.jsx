@@ -34,6 +34,8 @@ export default class CentralButton {
   }
 
   createSnapshot() {
+    if (!this.desc)
+      return;
     const condition = {
       active: true,
       currentWindow: true,
@@ -43,14 +45,15 @@ export default class CentralButton {
         action: 'CREATE_SNAPSHOT',
         data: {
           host: new URL(tab.url).hostname,
-          url: tab.url,
-          favIconUrl: tab.favIconUrl,
-          description: this.desc
+          ...tab,
+          description: this.desc,
+          time: new Date().toLocaleString()
         },
       });
 
       this.openCollapse = false;
       this.desc = '';
+      this.$emit('capture');
     });
   }
 
@@ -117,6 +120,7 @@ export default class CentralButton {
               <button
                 class="button is-primary"
                 onClick={this.createSnapshot}
+                disabled={!this.desc}
               >
                 save
               </button>

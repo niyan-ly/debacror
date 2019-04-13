@@ -2,6 +2,8 @@
 
 #### DEVELOPMENT
 
+For developers that in China, uncomment the variable in `.npmrc` file before install dependencies.
+
 - release
 
 ```bash
