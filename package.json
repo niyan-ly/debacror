@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hapulb/chrome-ext.git"
+    "url": "git+https://github.com/hapulb/debacror.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hapulb/chrome-ext/issues"
+    "url": "https://github.com/hapulb/debacror/issues"
   },
-  "homepage": "https://github.com/hapulb/chrome-ext#readme",
+  "homepage": "https://github.com/hapulb/debacror#readme",
   "dependencies": {
     "@medv/finder": "^1.1.1",
     "buefy": "^0.7.3",

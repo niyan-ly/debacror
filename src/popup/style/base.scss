@@ -7,4 +7,7 @@ $colors: (
     $primary,
     $primary-invert,
   ),
+  'link': ($cyan, $cyan-invert)
 );
+@import '~bulma';
+@import '~buefy/src/scss/buefy';
