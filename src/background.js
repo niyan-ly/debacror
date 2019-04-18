@@ -2,14 +2,14 @@ import { Storage, signal, isEmpty, recordPrefix } from './util';
 
 /**
  * @typedef {Object} Record
- * @property {String} host
- * @property {String} url
- * @property {Object[]} actions
  * @property {String} description
- * @property {String} favIconUrl
+ * @property {Object[]} actions
+ * @property {String} time
+ * @property {String} initialURL
  */
 
 let activeTabList = [];
+let taskList = [];
 
 const snapshotList = new Storage({
   namespace: 'SNAPSHOT_NAME_LIST',

@@ -55,14 +55,13 @@ class Executor {
   }
 
   step() {
-    const { selector, type, value } = this.actions[this.index];
-
     if (this.index < 0) {
       executor.redirect(this.record.initialURL);
       this.index = 0;
       return this.index >= this.actions.length;
     }
-
+    
+    const { selector, type, value } = this.actions[this.index];
     const handler = executor[type];
     handler ? handler(dom.get(selector), value) : null;
 

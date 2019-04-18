@@ -100,7 +100,6 @@ signal.onMessageForCS = (request, ...others) => {
       const run = new Executor(name);
       await run.init();
       await run.automate();
-      console.log('done');
     },
     IS_RECORDING(request, sender, sendResponse) {
       sendResponse({

@@ -1,6 +1,8 @@
 const CopyPlugin = require('copy-webpack-plugin-advanced')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const TerserJSPlugin = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const { resolve } = require('path')
 const { VueLoaderPlugin } = require('vue-loader')
 
@@ -26,6 +28,7 @@ module.exports = {
     path: resolve(__dirname, '../release')
   },
   optimization: {
+    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
     splitChunks: {
       cacheGroups: {
         common: {
