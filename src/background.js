@@ -15,6 +15,7 @@ const snapshotList = new Storage({
   namespace: 'SNAPSHOT_NAME_LIST',
 });
 
+/** clean up used storage space when tab is closed */
 chrome.tabs.onRemoved.addListener(tabId => {
   const storage = new Storage({
     namespace: recordPrefix.concat(tabId),

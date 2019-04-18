@@ -22,9 +22,11 @@
   "dependencies": {
     "@medv/finder": "^1.1.1",
     "buefy": "^0.7.3",
+    "compare-urls": "^2.0.0",
+    "keycode": "^2.2.0",
     "vue": "^2.6.10",
-    "vue-property-decorator": "^8.1.0",
-    "vue-class-component": "^7.0.2"
+    "vue-class-component": "^7.0.2",
+    "vue-property-decorator": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",

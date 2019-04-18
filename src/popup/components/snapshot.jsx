@@ -28,22 +28,25 @@ export default class Snapshot {
   }
 
   mounted() {
-    signal.onMessageForPopUp = request => {
-      const executor = {
-        UPDATE_VIEW: this.updateView.bind(this)
-      };
-
-      const handler = executor[request.action];
-      handler ? handler(request) : null;
-    };
+    this.snapshotList.on('change', this.updateView.bind(this));
   }
 
   removeItem(name) {
     signal.toBackground({
       action: 'RM_SNAPSHOT',
       data: {
-        name
+        name,
       },
+    });
+  }
+
+  restore(name) {
+    const condition = { active: true, currentWindow: true };
+    chrome.tabs.query(condition, ([tab]) => {
+      signal.toContentScript(tab.id, {
+        action: 'RESTORE',
+        name
+      });
     });
   }
 
@@ -68,7 +71,12 @@ export default class Snapshot {
               </div>
               <div class="column align-right">
                 <div class="buttons is-right has-addons show-on-hover">
-                  <a class="button is-small is-primary">restore</a>
+                  <a
+                    class="button is-small is-primary"
+                    onClick={() => this.restore(name)}
+                  >
+                    restore
+                  </a>
                   <a
                     class="button is-small"
                     onClick={() => this.removeItem(name)}

@@ -1,22 +1,18 @@
-// import Vue from 'vue';
-// import Buefy from 'buefy';
-// import 'buefy/dist/buefy.css';
+import Vue from 'vue';
+import Buefy from 'buefy';
+import 'buefy/dist/buefy.css';
 
-// import App from './app';
+import App from './app';
+import { Storage } from '../util';
 
-// Vue.use(Buefy);
+Vue.use(Buefy);
+const store = new Storage({
+  namespace: 'SNAPSHOT_NAME_LIST',
+});
 
-// new Vue({
-//   el: '#app',
-//   render(h) {
-//     return <App />;
-//   }
-// });
-// chrome.devtools.panels.create(
-//   'My Panel',
-//   'MyPanelIcon.png',
-//   'Panel.html',
-//   function() {
-//     // code invoked on panel creation
-//   },
-// );
+new Vue({
+  el: '#app',
+  render() {
+    return <App store={store} style="user-select:none" />;
+  },
+});

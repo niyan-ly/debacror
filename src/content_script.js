@@ -1,5 +1,6 @@
 import finder from '@medv/finder';
-import { signal, Storage, dom } from './util';
+import { signal } from './util';
+import { Executor } from './util/restore';
 
 let EVENT_TARGET = null;
 let HAS_INJECTED = false;
@@ -80,61 +81,27 @@ function detach() {
   HAS_INJECTED = false;
 }
 
-async function delay(millisecond) {
-  await new Promise(res => {
-    setTimeout(res, millisecond);
-  });
-}
-
-async function restore({ delayValue = 400 }) {
-  const store = new Storage({ namespace: location.hostname });
-  const record = await store.get(location.href);
-
-  for (const action of record.actions) {
-    const element = dom.get(action.selector);
-    await delay(Number(delayValue));
-
-    if (action.type === 'input') {
-      element.value = action.value;
-      action.value &&
-        action.value.split('').map(letter => {
-          const event = new Event('input', {
-            bubbles: true,
-            cancelable: true,
-            data: letter,
-          });
-
-          element.dispatchEvent(event);
-        });
-    }
-
-    if (action.type === 'click') {
-      const event = new Event('click', {
-        bubbles: true,
-        cancelable: true,
-      });
-
-      element.dispatchEvent(event);
-    }
-  }
-}
-
 signal.onMessageForCS = (request, ...others) => {
   const executor = {
     START_RECORD({ from }) {
       inject();
-      if (from ==='BG') {
+      if (from === 'BG') {
         signal.toBackground({
           action: 'SAVE',
           data: {
             type: 'redirect',
-            value: location.href
-          }
+            value: location.href,
+          },
         });
       }
     },
     END_RECORD: detach,
-    RESTORE: restore,
+    async RESTORE({ name }) {
+      const run = new Executor(name);
+      await run.init();
+      await run.automate();
+      console.log('done');
+    },
     IS_RECORDING(request, sender, sendResponse) {
       sendResponse({
         result: HAS_INJECTED,
@@ -143,12 +110,12 @@ signal.onMessageForCS = (request, ...others) => {
   };
 
   const doThis = executor[request.action];
-  doThis instanceof Function ? doThis(request, ...others) : null;
+  doThis ? doThis(request, ...others) : null;
 };
 
 /**
- * tell extesion is available or not
+ * trigger when content script has been injected.
  */
 signal.toBackground({
-  action: 'AVAILABLE'
+  action: 'AVAILABLE',
 });

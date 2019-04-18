@@ -119,6 +119,8 @@ module.exports = {
     new CopyPlugin([
       'manifest.json',
       'popup_disabled.html',
+      'devtool.html',
+      'devtool/create-panel.js',
       {
         from: 'icons/',
         to: 'img/',
@@ -131,9 +133,9 @@ module.exports = {
       chunks: ['vendors', 'popup']
     }),
     new HtmlWebpackPlugin({
-      template: '../src/devtool.html',
+      template: '../src/popup.html',
       inject: 'body',
-      filename: 'devtool.html',
+      filename: 'debacror-tab.html',
       chunks: ['vendors', 'devtool']
     })
   ]

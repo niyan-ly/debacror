@@ -35,13 +35,11 @@ export default class App {
   }
 
   async mounted() {
-    const messageHandler = {
-      UPDATE_VIEW: this.updateView.bind(this),
-    };
+    const messageHandler = {};
 
     signal.onMessageForPopUp = request => {
       const handler = messageHandler[request.action];
-      handler instanceof Function ? handler() : null;
+      handler ? handler() : null;
     };
 
     chrome.tabs.query(this.CONDITION, ([tab]) => {
@@ -49,6 +47,7 @@ export default class App {
       this.store = new Storage({
         namespace: recordPrefix.concat(tab.id),
       });
+      this.store.on('change', this.updateView.bind(this));
 
       this.updateView();
 
