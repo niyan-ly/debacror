@@ -1,4 +1,5 @@
 import Component from 'vue-class-component';
+import Vue from 'vue';
 import Logo from '../assets/logo.svg';
 import { Storage, signal, recordPrefix } from '../../util';
 // import AppFooter from './footer';
@@ -8,7 +9,7 @@ import Snapshot from './snapshot';
 import TabInfo from './tab-info';
 
 @Component
-export default class App {
+export default class App extends Vue {
   isRecording = false;
   actions = [];
   /**
@@ -102,19 +103,17 @@ export default class App {
     chrome.tabs.query(this.CONDITION, ([tab]) => {
       signal.broadcast(tab.id, {
         action: 'END_RECORD',
-        data: tab
+        data: tab,
       });
     });
   }
 
-  // restore() {
-  //   chrome.tabs.query(this.CONDITION, ([tab]) => {
-  //     signal.toContentScript(tab.id, {
-  //       action: 'RESTORE',
-  //       delayValue: this.delayValue,
-  //     });
-  //   });
-  // }
+  onRestore() {
+    /** stop record before restore */
+    if (this.isRecording) {
+      this.$refs.controller.toggleRecord();
+    }
+  }
 
   reloadCurrentPage() {
     chrome.tabs.reload();
@@ -138,9 +137,10 @@ export default class App {
         >
           <b-tab-item label="RECORD" icon-pack="fas" icon="video">
             <CentralButton
+              ref="controller"
               statu={this.recordStatu}
-              allow-shot={this.actions.length}
-              allow-clear={this.actions.length}
+              allow-shot={!!this.actions.length}
+              allow-clear={!!this.actions.length}
               onStart={this.startRecord}
               onPause={this.stopRecord}
               onReload={this.reloadCurrentPage}
@@ -156,7 +156,10 @@ export default class App {
             icon-pack="fas"
             icon="history"
           >
-            <Snapshot selected-tab-index={this.selectedTabIndex} />
+            <Snapshot
+              onRestore={this.onRestore}
+              selected-tab-index={this.selectedTabIndex}
+            />
           </b-tab-item>
         </b-tabs>
         {/* <AppFooter /> */}

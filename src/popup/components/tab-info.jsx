@@ -1,8 +1,9 @@
 import Component from 'vue-class-component';
+import Vue from 'vue';
 import { Storage, recordPrefix } from '../../util';
 
 @Component
-export default class TabInfo {
+export default class TabInfo extends Vue {
   url = '';
 
   get urlHost() {

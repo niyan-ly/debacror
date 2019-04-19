@@ -92,8 +92,8 @@ signal.onMessageForBG = async ({ action, data }, sender) => {
       });
 
       /**
-       * track the actived tab that has been redirected to
-       * new host, activate the record under the new host
+       * track the actived tabs that have been redirected to
+       * new host, activate the recordation under the new host
        */
       if (activeTabList.find(i => i.id === tab.id)) {
         signal.toContentScript(tab.id, {
@@ -104,6 +104,29 @@ signal.onMessageForBG = async ({ action, data }, sender) => {
           from: 'BG',
         });
       }
+
+      /** there is unfinished task */
+      const stepIndex = taskList.findIndex(({ tabId }) => tabId === tab.id);
+      if (stepIndex >= 0) {
+        signal.toContentScript(tab.id, {
+          action: 'RESTORE',
+          step: taskList[stepIndex].step + 1,
+          name: taskList[stepIndex].name
+        });
+        taskList.splice(stepIndex, 1);
+      }
+    },
+    /** 
+     * record restore statu when redirection
+     * 
+     * will be triggered by content script
+     */
+    async RESTORE_STATU({ step, name }) {
+      taskList.push({
+        tabId: tab.id,
+        step,
+        name
+      });
     },
     /**
      * will be triggered by popup

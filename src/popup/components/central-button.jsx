@@ -1,4 +1,5 @@
 import Component from 'vue-class-component';
+import Vue from 'vue';
 import { signal } from '../../util';
 
 @Component({
@@ -14,7 +15,7 @@ import { signal } from '../../util';
     },
   },
 })
-export default class CentralButton {
+export default class CentralButton extends Vue {
   openCollapse = false;
   desc = '';
 
@@ -34,8 +35,7 @@ export default class CentralButton {
   }
 
   createSnapshot() {
-    if (!this.desc)
-      return;
+    if (!this.desc) return;
     const condition = {
       active: true,
       currentWindow: true,
@@ -47,7 +47,7 @@ export default class CentralButton {
           host: new URL(tab.url).hostname,
           ...tab,
           description: this.desc,
-          time: new Date().toLocaleString()
+          time: new Date().toLocaleString(),
         },
       });
 
@@ -75,7 +75,14 @@ export default class CentralButton {
     return (
       <section>
         <div class="buttons has-addons is-centered">
-          <a class={{button: true, 'is-danger': this.statu === 'record'}} onClick={this.toggleRecord}>
+          <a
+            class={{
+              button: true,
+              'is-danger': this.statu === 'record',
+            }}
+            onClick={this.toggleRecord}
+          >
+            {/* !outdated, no suitable scenario match */}
             <b-tooltip
               active={this.statu === 'reload'}
               label="this page need to reload."
@@ -114,7 +121,7 @@ export default class CentralButton {
               icon="info"
               icon-pack="fas"
               maxlength={20}
-              onInput={v => this.desc = v}
+              onInput={v => (this.desc = v)}
             />
             <p class="control">
               <button

@@ -96,9 +96,9 @@ signal.onMessageForCS = (request, ...others) => {
       }
     },
     END_RECORD: detach,
-    async RESTORE({ name }) {
+    async RESTORE({ name, step }) {
       const run = new Executor(name);
-      await run.init();
+      await run.init(step);
       await run.automate();
     },
     IS_RECORDING(request, sender, sendResponse) {
@@ -108,8 +108,8 @@ signal.onMessageForCS = (request, ...others) => {
     },
   };
 
-  const doThis = executor[request.action];
-  doThis ? doThis(request, ...others) : null;
+  const handler = executor[request.action];
+  handler ? handler(request, ...others) : null;
 };
 
 /**

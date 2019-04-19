@@ -1,14 +1,15 @@
 import Component from 'vue-class-component';
+import Vue from 'vue';
 import { Watch } from 'vue-property-decorator';
 import { Storage, signal } from '../../util';
 import Empty from './empty';
 
 @Component({
   props: {
-    selectedTabIndex: Boolean,
+    selectedTabIndex: Number,
   },
 })
-export default class Snapshot {
+export default class Snapshot extends Vue {
   snapshotList = new Storage({ namespace: 'SNAPSHOT_NAME_LIST' });
   renderList = [];
 
@@ -41,6 +42,8 @@ export default class Snapshot {
   }
 
   restore(name) {
+    /** notify that a restore action is going to start */
+    this.$emit('restore');
     const condition = { active: true, currentWindow: true };
     chrome.tabs.query(condition, ([tab]) => {
       signal.toContentScript(tab.id, {

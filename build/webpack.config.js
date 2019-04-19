@@ -1,51 +1,56 @@
-const CopyPlugin = require('copy-webpack-plugin-advanced')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CopyPlugin = require('copy-webpack-plugin-advanced');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const { resolve } = require('path')
-const { VueLoaderPlugin } = require('vue-loader')
+const { resolve } = require('path');
+const { VueLoaderPlugin } = require('vue-loader');
 
-module.exports = {
-  mode: 'production',
+module.exports = (isProduction = true) => ({
+  mode: isProduction ? 'production' : 'development',
   context: resolve(__dirname, '../src'),
-  // devtool: 'cheap-module-source-map',
+  devtool: isProduction ? false : 'cheap-module-source-map',
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue.esm.js'
+      vue$: 'vue/dist/vue.esm.js',
     },
-    extensions: ['.js', '.vue', '.jsx']
+    extensions: ['.js', '.vue', '.jsx'],
   },
   entry: {
-    'content_script': './content_script.js',
+    content_script: './content_script.js',
     background: './background.js',
     popup: './popup',
-    devtool: './devtool'
+    devtool: './devtool',
   },
   output: {
     filename: '[name].js',
     // chunkFilename: 'chunk.js',
-    path: resolve(__dirname, '../release')
+    path: resolve(__dirname, '../release'),
   },
-  optimization: {
-    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
-    splitChunks: {
-      cacheGroups: {
-        common: {
-          test: /[\\/]node_modules[\\/](vue|buefy)[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-        }
+  optimization: isProduction
+    ? {
+        minimizer: [
+          new TerserJSPlugin({}),
+          new OptimizeCSSAssetsPlugin({}),
+        ],
+        splitChunks: {
+          cacheGroups: {
+            common: {
+              test: /[\\/]node_modules[\\/](vue|buefy)[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
       }
-    }
-  },
+    : {},
   module: {
     rules: [
       {
         test: /\.vue$/,
         loader: 'vue-loader',
         exclude: [/node_modules/],
-        options: {}
+        options: {},
       },
       {
         test: /.s?css$/,
@@ -54,16 +59,16 @@ module.exports = {
             loader: 'vue-style-loader',
           },
           {
-            loader: MiniCssExtractPlugin.loader
+            loader: MiniCssExtractPlugin.loader,
           },
           {
             loader: 'css-loader',
             options: {
-              importLoaders: 1
-            }
+              importLoaders: 1,
+            },
           },
-          'sass-loader'
-        ]
+          'sass-loader',
+        ],
       },
       {
         test: /\.jsx?$/,
@@ -81,43 +86,43 @@ module.exports = {
             [
               '@babel/plugin-proposal-decorators',
               {
-                legacy: true
-              }
+                legacy: true,
+              },
             ],
-            'transform-class-properties'
-          ]
-        }
+            'transform-class-properties',
+          ],
+        },
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 10000,
-          name: 'img/[name].[ext]'
-        }
+          name: 'img/[name].[ext]',
+        },
       },
       {
         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 10000,
-          name: 'media/[name].[ext]'
-        }
+          name: 'media/[name].[ext]',
+        },
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 10000,
-          name: 'fonts/[name].[ext]'
-        }
-      }
-    ]
+          name: 'fonts/[name].[ext]',
+        },
+      },
+    ],
   },
   plugins: [
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
-      filename: '[name].css'
+      filename: '[name].css',
     }),
     new CopyPlugin([
       'manifest.json',
@@ -127,19 +132,19 @@ module.exports = {
       {
         from: 'icons/',
         to: 'img/',
-      }
+      },
     ]),
     new HtmlWebpackPlugin({
       template: '../src/popup.html',
       inject: 'body',
       filename: 'popup.html',
-      chunks: ['vendors', 'popup']
+      chunks: ['vendors', 'popup'],
     }),
     new HtmlWebpackPlugin({
       template: '../src/popup.html',
       inject: 'body',
       filename: 'debacror-tab.html',
-      chunks: ['vendors', 'devtool']
-    })
-  ]
-}
+      chunks: ['vendors', 'devtool'],
+    }),
+  ],
+});

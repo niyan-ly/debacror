@@ -34,15 +34,15 @@ if (arg.watch) {
 
   webpack(
     {
-      ...wConfig,
+      ...wConfig(false),
       watch: true,
       plugins: [
-        ...wConfig.plugins,
+        ...wConfig(false).plugins,
         new AfterCompilationPlugin(launchChrome),
       ],
     },
     errLog,
   );
 } else {
-  webpack(wConfig, errLog);
+  webpack(wConfig(), errLog);
 }
